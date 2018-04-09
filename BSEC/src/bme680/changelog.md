@@ -1,0 +1,62 @@
+# Change Log
+All notable changes to the BME680 Sensor API will be documented in this file.
+
+## v3.5.6, 19 Jan 2018
+### Added
+ - Floating point support added for the API
+ - Lower temperature cap removed in "calc_heater_res" APIs
+
+## v3.5.5, 20 Nov 2017
+### Changed
+ - Updated the buffer size in "get_calib_data" API
+
+## v3.5.4, 16 Nov 2017
+### Changed
+ - Updated the set/get gas profile duration logic
+
+## v3.5.3, 30 Oct 2017
+### Changed
+ - Changed the compensation equation formulae to use shifting operation
+ - Updated the "bme680_get_profile_dur" API
+ - Fixed Checkpatch and made linux compatible
+
+## v3.5.2, 18 Oct 2017
+### Changed
+ - Fixed bug of temperature compensation in pressure
+ 
+## v3.5.1, 5 Jul 2017
+### Changed
+ - Fixed bug with overwriting of the result with communication results
+ - Added member in the dev structure to store communication results
+ - Updated set profile duration API to not return a result.
+ - Added new API to get the duration for the existing profile
+ - Fixed bug with setting gas configuration. Reduced to writing only relevant bytes
+ - Updated readme
+ - Updated documentation for the type definitions
+ - Removed mode check for get sensor data and setting and getting profile dur
+ 
+## v3.5.0, 28 Jun 2017
+### Changed
+- Fixed bug with getting and setting mem pages
+- Changed initialization sequence to be more robust
+- Added additional tries while reading data in case of inadequate delay
+
+## v3.4.0, 8 Jun 2017
+### Changed
+- Modified the bme680_get_sensor_data API. User has to now pass the struct that stores the data rather than retrieving from the bme680_dev structure.
+- Fixed possible bugs
+
+## v3.3.0, 24 May 2017
+### Changed
+- Name changes in the BME680 device structure.
+- Removed sequential and parallel modes.
+- Removed ODR related sensor settings
+- Modified get sensor settings API with user selection.
+- Removed sort sensor data and swap fields API which are not required.
+
+### Added
+- BME680 set profile duration API.
+
+## v3.2.1, 17 May 2017
+### Added
+- Took the reference as base version 3.2.1 of BME680 sensor and added.
