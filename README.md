@@ -4,13 +4,6 @@ Until the Arduino IDE natively supports pre-compiled libraries, the following st
 
 ## Installation and getting started
 
-If you have already used the previous example code, some of the changes need to be reverted.
-
-Specifically,
-
- 1. Adding the linker flag ```-libalgobsec``` in the platform.txt file.
- 2. Copying of the ```libalgobsec.a``` file to a specific directory.
-
 ### 1. Install the latest Arduino IDE
 
 As of this publication, the latest Arduino IDE 1.8.5 can be downloaded from this [link](https://www.arduino.cc/download_handler.php)
@@ -21,13 +14,15 @@ Either download this library as a zip and import it into the Arduino IDE. Refer 
 
 ### 3. Replace the arduino-builder
 
-The ```arduino-builder-PR219``` now has the ability to select the appropriate pre-compiled library from the library folder. This avoids the need to add the linker flag ```-libalgobsec``` in the platform.txt file and copying the pre-compiled library ```libalgobsec.a``` to a specific directory.
+The `arduino-builder-PR219` now has the ability to select the appropriate pre-compiled library from the library folder.
 
-Replace the arduino-builder executable from the Arduino folder with the appropriate file based on your OS from this link [arduino-builder-219.zip](http://downloads.arduino.cc/PR/arduino-builder/arduino-builder-219.zip).
+Replace the arduino-builder executable from the Arduino installation folder with the appropriate file based on your OS from this link [arduino-builder-219.zip](http://downloads.arduino.cc/PR/arduino-builder/arduino-builder-219.zip).
 
 ### 4. Modify the platform.txt file
 
-The arduino-builder passes the linker flags under ```compiler.c.elf.extra_flags```. Most platform.txt files in the combine recipe place this previously unused variable in the start of the link recipe whereas it should be near the end along with the other pre-compiled libraries flags.
+If you have already used the previous example code remove the linker flag `-libalgobsec` in the platform.txt file.
+
+The arduino-builder passes the linker flags under `compiler.c.elf.extra_flags`. Most platform.txt files in the combine recipe place this previously unused variable in the start of the link recipe whereas it should be near the end along with the other pre-compiled libraries flags.
 
 #### Examples
 
@@ -66,12 +61,12 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 
 Due to the current size of the BSEC library, upon compilation, you will receive an error: ```section `.text' will not fit in region `iram1_0_seg'```. In order to solve this, you will need to modify the linker script and specifically define where the library should be placed in memory.
 
-You will need to modify the file ```eagle.app.v6.common.ld``` typically found in ```{YourESP8266PPackageDirectory}\tools\sdk\ld```. 
+You will need to modify the file `eagle.app.v6.common.ld` typically found in `{YourESP8266PPackageDirectory}\tools\sdk\ld`. 
 
 With reference to the linker script [here](https://github.com/esp8266/Arduino/blob/master/tools/sdk/ld/eagle.app.v6.common.ld),
 
-After line [```117 *libwps.a:(.literal.* .text.*)```](https://github.com/esp8266/Arduino/blob/42f824b2e4a1df8812306d40f2ea59a1323618c1/tools/sdk/ld/eagle.app.v6.common.ld#L117),
-add ```*libalgobsec.a:(.literal.* .text.*)```, which should look like,
+After line [`117 *libwps.a:(.literal.* .text.*)`](https://github.com/esp8266/Arduino/blob/42f824b2e4a1df8812306d40f2ea59a1323618c1/tools/sdk/ld/eagle.app.v6.common.ld#L117),
+add `*libalgobsec.a:(.literal.* .text.*)`, which should look like,
 
 ```
     *libupgrade.a:(.literal.* .text.*)
@@ -85,7 +80,21 @@ add ```*libalgobsec.a:(.literal.* .text.*)```, which should look like,
   } >irom0_0_seg :irom0_0_phdr
 ```
 
-### 6. Verify and upload the example code
+### 6. Copy the binaries
+
+If you have already used the previous example code remove the `libalgobsec.a` file from the core directory or any other location you might have copied it to and instead, copy the binaries from the zip file available via our [website](https://www.bosch-sensortec.com/en/bst/products/all_products/bsec), to where the Arduino library is installed on your system. For Windows, this is typically under `Documents/Arduino/libraries/BSEC-Arduino-library-master`. The name of the library may differ depending how you installed it.
+
+| From the .zip (algo/bin/Normal_version/) | To (Documents/Arduino/libraries/BSEC-Arduino-library-master/src/) |
+|------|----|
+| avr/AVR8_megaAVR | atmega2560 |
+| gcc/Cortex_M0+ | cortex-m0plus |
+| gcc/Cortex_M3 | cortex-m3 |
+| gcc/Cortex_M4F | cortex-m4 |
+| gcc/Cortex_M4F | cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard |
+| esp32 |  esp32 |
+| esp8266 |  esp8266 |
+
+### 7. Verify and upload the example code
 
 Start or restart the Arduino IDE. Open the example code found under ```File>Examples>Bsec software library>Basic```.
 
@@ -93,17 +102,16 @@ Select your board and COM port. Upload the example. Open the Serial monitor. You
 
 Note that not all supported cores have been tested. In such cases, the examples can be found under ```File>Examples>INCOMPATIBLE>Bsec software library>Basic```
 
-### 7. Tested board list
+### 8. Tested board list
 
 The current list of tested micro-controllers include,
 
-| Core MCU | Tested boards | Pre-compiled library directory |
-|----------|---------------|--------------------------------|
-| atmega2560 | Arduino MEGA 2560 | atmega2560 |
-| cortex-m0plus | Arduino Zero | cortex-m0plus |
-| cortex-m3 | Arduino Due | cortex-m3 |
-| cortex-m4f | Adafruit BlueFruit NRF52 Feather, STM32 Nucleo F411RE | cortex-m4, "cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard" |
-| esp32 | Sparkfun ESP32 Thing | esp32 |
-| esp8266 | Adafruit Feather HUZZAH | esp8266 |
-
+| Core MCU | Tested boards |
+|----------|---------------|
+| atmega2560 | Arduino MEGA 2560 |
+| cortex-m0plus | Arduino Zero |
+| cortex-m3 | Arduino Due |
+| cortex-m4f | Adafruit BlueFruit NRF52 Feather, STM32 Nucleo F411RE |
+| esp32 | Sparkfun ESP32 Thing |
+| esp8266 | Adafruit Feather HUZZAH |
 ## Copyright (C) 2017 - 2018 Bosch Sensortec GmbH
