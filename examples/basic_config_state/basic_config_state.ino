@@ -137,7 +137,7 @@ void updateState(void)
   bool update = false;
   if (stateUpdateCounter == 0) {
     /* First state update when IAQ accuracy is >= 1 */
-    if (iaqSensor.iaqAccuracy >= 3) {
+    if (iaqSensor.iaqAccuracy >= 1) {
       update = true;
       stateUpdateCounter++;
     }
