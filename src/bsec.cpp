@@ -255,7 +255,11 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 	if (_data.status & BME680_NEW_DATA_MSK) {
 		if (bme680Settings.process_data & BSEC_PROCESS_TEMPERATURE) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_TEMPERATURE;
-			inputs[nInputs].signal = _data.temperature;
+#ifdef BME680_FLOAT_POINT_COMPENSATION
+      inputs[nInputs].signal = _data.temperature;
+#else
+      inputs[nInputs].signal = _data.temperature / 100.0f;
+#endif
 			inputs[nInputs].time_stamp = currTimeNs;
 			nInputs++;
 			/* Temperature offset from the real temperature due to external heat sources */
@@ -266,7 +270,11 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 		}
 		if (bme680Settings.process_data & BSEC_PROCESS_HUMIDITY) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_HUMIDITY;
-			inputs[nInputs].signal = _data.humidity;
+#ifdef BME680_FLOAT_POINT_COMPENSATION
+      inputs[nInputs].signal = _data.humidity;
+#else
+      inputs[nInputs].signal = _data.humidity / 1000.0f;
+#endif
 			inputs[nInputs].time_stamp = currTimeNs;
 			nInputs++;
 		}
