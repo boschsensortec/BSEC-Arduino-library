@@ -249,7 +249,7 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 		return false;
 	}
 
-	bsec_input_t inputs[BSEC_MAX_PHYSICAL_SENSOR]; // Temp, Pres, Hum & Gas
+	bsec_input_t inputs[BSEC_MAX_PHYSICAL_SENSOR]; // Temp, Press, Hum & Gas
 	uint8_t nInputs = 0, nOutputs = 0;
 
 	if (_data.status & BME680_NEW_DATA_MSK) {
@@ -386,7 +386,7 @@ int64_t Bsec::getTimeMs(void)
 {
 	int64_t timeMs = millis();
 
-	if (lastTime > timeMs) { // An overflow occured
+	if (lastTime > timeMs) { // An overflow occurred
 		lastTime = timeMs;
 		millisOverflowCounter++;
 	}
@@ -453,7 +453,7 @@ int8_t Bsec::spiTransfer(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint1
 {
 	int8_t rslt = 0;
 	if(Bsec::spiObj) {
-		Bsec::spiObj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be upto 10MHz
+		Bsec::spiObj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be up to 10MHz
 	
 		digitalWrite(devId, LOW);
 
