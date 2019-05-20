@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File		bme680.c
- * @date	22 Feb 2018
- * @version	3.5.8
+ * @date	19 Jun 2018
+ * @version	3.5.9
  *
  */
 
@@ -895,10 +895,10 @@ static int16_t calc_temperature(uint32_t temp_adc, struct bme680_dev *dev)
  */
 static uint32_t calc_pressure(uint32_t pres_adc, const struct bme680_dev *dev)
 {
-	int32_t var1 = 0;
-	int32_t var2 = 0;
-	int32_t var3 = 0;
-	int32_t pressure_comp = 0;
+	int32_t var1;
+	int32_t var2;
+	int32_t var3;
+	int32_t pressure_comp;
 
 	var1 = (((int32_t)dev->calib.t_fine) >> 1) - 64000;
 	var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) *
@@ -913,9 +913,9 @@ static uint32_t calc_pressure(uint32_t pres_adc, const struct bme680_dev *dev)
 	pressure_comp = 1048576 - pres_adc;
 	pressure_comp = (int32_t)((pressure_comp - (var2 >> 12)) * ((uint32_t)3125));
 	if (pressure_comp >= BME680_MAX_OVERFLOW_VAL)
-		pressure_comp = ((pressure_comp / (uint32_t)var1) << 1);
+		pressure_comp = ((pressure_comp / var1) << 1);
 	else
-		pressure_comp = ((pressure_comp << 1) / (uint32_t)var1);
+		pressure_comp = ((pressure_comp << 1) / var1);
 	var1 = ((int32_t)dev->calib.par_p9 * (int32_t)(((pressure_comp >> 3) *
 		(pressure_comp >> 3)) >> 13)) >> 12;
 	var2 = ((int32_t)(pressure_comp >> 2) *

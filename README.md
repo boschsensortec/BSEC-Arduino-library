@@ -1,50 +1,125 @@
-# Instructions for using the BSEC Arduino Library in Arduino 1.8.5
+# Instructions for using the BSEC Arduino Library in Arduino 1.8.9
 
-Until the Arduino IDE natively supports pre-compiled libraries, the following steps/hacks will need to be followed to integrate the BSEC library into your project.
+## About BSEC
+
+Bosch Sensortec Environmental Cluster (BSEC) Software v1.4.7.3 released on April 10th, 2019
+
+The BSEC fusion library has been conceptualized to provide a higher-level signal processing and fusion for the BME680. The library receives compensated sensor values from the sensor API. It processes the BME680 signals to provide the requested sensor outputs.
+
+Key features
+
+- Precise calculation of ambient air temperature outside the device
+- Precise calculation of ambient relative humidity outside the device
+- Precise calculation of pressure outside the device
+- Precise calculation of air quality (IAQ) level outside the device
+
+Typical applications
+
+- Health monitoring/ well-being (warning regarding dehydration / heat stroke)
+- Home automation control
+- Control heating, venting, air conditioning (HVAC) applications
+- Gaming applications like flying toys
+- Internet of things applications
+- Context awareness
+- Enhancement of GPS navigation (e.g., time-to-first-fix improvement, dead-reckoning, slope detection)
+- Indoor navigation (floor detection, elevator detection)
+- Outdoor navigation,
+- Leisure and sports applications
+- Weather forecast
+- Health care applications (e.g. Spirometry)
+- Vertical velocity indication (e.g. rise/sink speed)
+
+Supported platforms
+
+- BSEC library is supported on 32, 16 and 8 bit MCU platforms
+
+Available binaries for download:
+
+| Platform | Compiler | ROM (BSEC) | ROM (BSEC lite*) | RAM  | TYPE |
+|----------|----------|------------|------------------|------|------|
+| Cortex-ARM | ARMCC | 19-20k | 12-13k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
+| Cortex-ARM | GCC | 20-22k | 12-14k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
+| Cortex-ARN | IAR | 20k | 12-13k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
+| Cortex-A* | GCC | 21k | 13k | 1k | Cortex-A7 |
+| AVR_8bit | AVR-GCC | 42k | 25 | 1k | MegaAVR, XMEGA |
+| AVR_32bit | AVR-GCC | 24k | 13k | 1k | 32-bit AVR UC3 |
+| ESP8266 | xtensa-lx106-elf-gcc | 28k | 17k | 1k | ESP8266 |
+| ESP32 | xtensa-esp32-elf-gcc | 24k | 14k | 1k | ESP32 |
+| MSP430 | msp430-elf-gcc | 34k | 20k | 1k | MSP430 |
+| Android system-x86 | gcc | 39-49k | 22-26k | 1k | x86, x86_64 |
+| Android system-arm | gcc | 21-38k | 13-19k | 1k | arm, arm64 |
+| Raspberry PI 0 linux | arm-linux-gnueabihf-gcc | 71k | 56k | 1k | armv6-32bits |
+| Raspberry PI3 linux | arm-linux-gnueabihf-gcc | 72k | 57k | 1k | armv8-a-64bits |
+
+The library size information above doesn't include additional dependencies based on the embedded system project & platform.
+
+*The BSEC lite version is an abbreviated version of BSEC with reduced code size & memory requirements. It does not include functions to save the state of BSEC, if the device powers down.
+
+For other platforms, please contact your local Bosch Sensortec representative
+
+Advantages
+
+- Easy to integrate
+- Hardware and software co-design for optimal performance
+- Complete software fusion solution out of one hand
+- Eliminates need for own fusion software development
+- Robust virtual sensor outputs optimized for the application
+
+## Software license agreement
+
+The BSEC software is only available for download or use after accepting the software license agreement. By using this library, you have agreed to the terms of the license agreement.
+
+[BSEC license agreement](https://ae-bst.resource.bosch.com/media/_tech/media/bsec/2017-07-17_ClickThrough_License_Terms_Environmentalib_SW_CLEAN.pdf)
 
 ## Installation and getting started
 
 ### 1. Install the latest Arduino IDE
 
-As of this publication, the latest Arduino IDE 1.8.5 can be downloaded from this [link](https://www.arduino.cc/download_handler.php)
+As of this publication, the latest Arduino IDE 1.8.9 can be downloaded from this [link](https://www.arduino.cc/download_handler.php)
 
 ### 2. Install the BSEC library
 
 Either download this library as a zip and import it into the Arduino IDE. Refer to [this](https://www.arduino.cc/en/Guide/Libraries) guide on how to import libraries.
 
-### 3. Replace the arduino-builder
+### 3. Modify the platform.txt file
 
-The `arduino-builder-PR219` now has the ability to select the appropriate pre-compiled library from the library folder.
+If you have already used the previous example code and hack guide, remove the linker flag `-libalgobsec` in the platform.txt file and reference to the `compiler.c.elf.extra_flags`.
 
-Replace the arduino-builder executable from the Arduino installation folder with the appropriate file based on your OS from this link [arduino-builder-219.zip](http://downloads.arduino.cc/PR/arduino-builder/arduino-builder-219.zip).
+The standard arduino-builder now passes the linker flags under `compiler.libraries.ldflags`. Most platform.txt files do not already include this new optional variable. You will hence need to declare this variable's default and add it to the end of the combine recipe. It is recommended to declare it in the following section like below,
 
-### 4. Modify the platform.txt file
+```
+# These can be overridden in platform.local.txt
+compiler.c.extra_flags=
+compiler.c.elf.extra_flags=
+#compiler.c.elf.extra_flags=-v
+compiler.cpp.extra_flags=
+compiler.S.extra_flags=
+compiler.ar.extra_flags=
+compiler.elf2hex.extra_flags=
+compiler.libraries.ldflags=
+```
 
-If you have already used the previous example code remove the linker flag `-libalgobsec` in the platform.txt file.
+and add it in the combine recipe like the below examples
 
-The arduino-builder passes the linker flags under `compiler.c.elf.extra_flags`. Most platform.txt files in the combine recipe place this previously unused variable in the start of the link recipe whereas it should be near the end along with the other pre-compiled libraries flags.
+#### ESP8266 community forum's ESP8266 core
 
-#### Examples
-
-##### ESP8266 community forum's ESP8266 core
-
-Original line [91, 92](https://github.com/esp8266/Arduino/blob/42f824b2e4a1df8812306d40f2ea59a1323618c1/platform.txt#L91),
+Original line [105](https://github.com/esp8266/Arduino/blob/68ee1216454eeea49dd3452c6ff21bc748f397b6/platform.txt#L105),
 
 ```
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {object_files} "{build.path}/arduino.ar" {compiler.c.elf.libs} -Wl,--end-group  "-L{build.path}"
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {build.exception_flags} -Wl,-Map "-Wl,{build.path}/{build.project_name}.map" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {object_files} "{archive_file_path}" {compiler.c.elf.libs} -Wl,--end-group  "-L{build.path}"
 ```
 
 should become
 
 ```
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags}  -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {object_files} "{build.path}/arduino.ar" {compiler.c.elf.libs} {compiler.c.elf.extra_flags} -Wl,--end-group  "-L{build.path}"
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {build.exception_flags} -Wl,-Map "-Wl,{build.path}/{build.project_name}.map" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {object_files} "{archive_file_path}" {compiler.c.elf.libs} {compiler.libraries.ldflags} -Wl,--end-group  "-L{build.path}"
 ```
 
-##### Arduino's SAMD core
+#### Arduino's SAMD core
 
-Original line [95, 96](https://github.com/arduino/ArduinoCore-samd/blob/2facbf6177ef568b9f05cce204c1563bfa6362e4/platform.txt#L95),
+Original line [96](https://github.com/arduino/ArduinoCore-samd/blob/86081cbf35fc0df0612a1b2c054877ff6788f9e7/platform.txt#L96),
 
 ```
 ## Combine gc-sections, archives, and objects
@@ -53,48 +128,42 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 
 Should be,
 ```
-## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" --specs=nano.specs --specs=nosys.specs {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group {compiler.arm.cmsis.ldflags} -lm {compiler.c.elf.extra_flags} "{build.path}/{archive_file}" -Wl,--end-group
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" --specs=nano.specs --specs=nosys.specs {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group {compiler.arm.cmsis.ldflags} -lm "{build.path}/{archive_file}" {compiler.libraries.ldflags} -Wl,--end-group
 ```
 
-### 5. Only for the ESP8266 - modify the linker script
+### 4. Additional core specific modifications
 
-Due to the current size of the BSEC library, upon compilation, you will receive an error: ```section `.text' will not fit in region `iram1_0_seg'```. In order to solve this, you will need to modify the linker script and specifically define where the library should be placed in memory.
+#### ESP8266 - modify the linker script header
 
-You will need to modify the file `eagle.app.v6.common.ld` typically found in `{YourESP8266PPackageDirectory}\tools\sdk\ld`. 
+Due to the architecture of the ESP8266's memories and current size of the BSEC library, upon compilation, you will receive an error: ```section `.text1' will not fit in region `iram1_0_seg'```. In order to solve this, you will need to modify the linker script and specifically define where the library should be placed in memory.
 
-With reference to the linker script [here](https://github.com/esp8266/Arduino/blob/master/tools/sdk/ld/eagle.app.v6.common.ld),
+You will need to modify the file `eagle.app.v6.common.ld.h` typically found in `{YourESP8266PPackageDirectory}\tools\sdk\ld`. 
 
-After line [`117 *libwps.a:(.literal.* .text.*)`](https://github.com/esp8266/Arduino/blob/42f824b2e4a1df8812306d40f2ea59a1323618c1/tools/sdk/ld/eagle.app.v6.common.ld#L117),
+With reference to the linker script [here](https://github.com/esp8266/Arduino/blob/master/tools/sdk/ld/eagle.app.v6.common.ld.h),
+
+After line [`177 *libwps.a:(.literal.* .text.*)`](https://github.com/esp8266/Arduino/blob/68ee1216454eeea49dd3452c6ff21bc748f397b6/tools/sdk/ld/eagle.app.v6.common.ld.h#L177),
 add `*libalgobsec.a:(.literal.* .text.*)`, which should look like,
 
 ```
-    *libupgrade.a:(.literal.* .text.*)
     *libwpa.a:(.literal.* .text.*)
     *libwpa2.a:(.literal.* .text.*)
     *libwps.a:(.literal.* .text.*)
-	*libalgobsec.a:(.literal.* .text.*)
-    *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text .irom.text.*)
-    _irom0_text_end = ABSOLUTE(.);
-    _flash_code_end = ABSOLUTE(.);
-  } >irom0_0_seg :irom0_0_phdr
+    *libalgobsec.a:(.literal.* .text.*)
+    *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom0.text.* .irom.text .irom.text.*)
+
+    /* __FUNCTION__ locals */
+    *(.rodata._ZZ*__FUNCTION__)
+    *(.rodata._ZZ*__PRETTY_FUNCTION__)
+    *(.rodata._ZZ*__func__)
 ```
 
-### 6. Copy the binaries
+#### NRF52 - modify the boards.txt file
 
-If you have already used the previous example code remove the `libalgobsec.a` file from the core directory or any other location you might have copied it to and instead, copy the binaries from the zip file available via our [website](https://www.bosch-sensortec.com/en/bst/products/all_products/bsec), to where the Arduino library is installed on your system. For Windows, this is typically under `Documents/Arduino/libraries/BSEC-Arduino-library-master`. The name of the library may differ depending how you installed it.
+Due to possibly various build options for ARM's Cortex-M4's FPU, a variety of static libaries can be generated. We offer two options based on whether the FPU is enabled or disabled. The static libraries are stored under the directories `cortex-m4` and `cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`. In order for the Arduino builder to use the correct static library, the directory name should match the internal `build.arch` variable. For the NRF52 core, this seems to be derived from the `build.mcu` variable which is defined in the boards.txt file. One, hence needs to update this variable to use the directory with the floating point enabled static library.
 
-| From the .zip (algo/bin/Normal_version/) | To (Documents/Arduino/libraries/BSEC-Arduino-library-master/src/) |
-|------|----|
-| avr/AVR8_megaAVR | atmega2560 |
-| gcc/Cortex_M0+ | cortex-m0plus |
-| gcc/Cortex_M3 | cortex-m3 |
-| gcc/Cortex_M4F | cortex-m4 |
-| gcc/Cortex_M4F | cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard |
-| esp32 |  esp32 |
-| esp8266 |  esp8266 |
+For example, the line [`feather52832.build.mcu=cortex-m4`](https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/0278a461b790fcfe2dcb85502791eece80c42aef/boards.txt#L38) should become `feather52832.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`
 
-### 7. Verify and upload the example code
+### 6. Verify and upload the example code
 
 Start or restart the Arduino IDE. Open the example code found under ```File>Examples>Bsec software library>Basic```.
 
@@ -102,16 +171,17 @@ Select your board and COM port. Upload the example. Open the Serial monitor. You
 
 Note that not all supported cores have been tested. In such cases, the examples can be found under ```File>Examples>INCOMPATIBLE>Bsec software library>Basic```
 
-### 8. Tested board list
+### 7. Tested board/core list
 
-The current list of tested micro-controllers include,
+The current list of tested boards include,
 
-| Core MCU | Tested boards |
-|----------|---------------|
-| atmega2560 | Arduino MEGA 2560 |
-| cortex-m0plus | Arduino Zero |
-| cortex-m3 | Arduino Due |
-| cortex-m4f | Adafruit BlueFruit NRF52 Feather, STM32 Nucleo F411RE |
-| esp32 | Sparkfun ESP32 Thing |
-| esp8266 | Adafruit Feather HUZZAH |
-## Copyright (C) 2017 - 2018 Bosch Sensortec GmbH
+| Core MCU | Tested boards | Arduino core version | Arduino core repository |
+|----------|---------------|----------------------|-------------------------|
+| Atmega 2560 | Arduino MEGA 2560 | Shipped with Arduino 1.8.9 | Shipped with Arduino 1.8.9 |
+| Cortex-m0+ | Arduino Zero | Upstream of v1.6.21 SHA-1 hash 86081cbf35fc0df0612a1b2c054877ff6788f9e7 | https://github.com/arduino/ArduinoCore-samd |
+| Cortex-m3 | Arduino Due | SHA-1 hash 0a4c3b196a02e48e31b752a05d8c8064007874dc | https://github.com/arduino/ArduinoCore-sam |
+| Cortex-m4 with FPU | Adafruit BlueFruit NRF52 Feather | Upstream of v0.10.1 SHA-1 hash 11614dae701a35f905d09792c7388d648b125369 | https://github.com/adafruit/Adafruit_nRF52_Arduino |
+| Esp32 | Sparkfun ESP32 Thing | v1.0.3-rc1 | https://github.com/espressif/arduino-esp32 |
+| Esp8266 | Adafruit Feather HUZZAH | Upstream of v2.5.1 SHA-1 hash 625c3a62c4991347e8298fb5e4021bc6f6df7099 | https://github.com/esp8266/Arduino |
+
+## Copyright (C) 2017 - 2019 Bosch Sensortec GmbH

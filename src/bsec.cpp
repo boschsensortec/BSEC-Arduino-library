@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.cpp
- * @date	31 Jan 2018
- * @version	1.0
+ * @date	20 May 2019
+ * @version	1.1
  *
  */
 
@@ -99,7 +99,6 @@ void Bsec::begin(uint8_t i2cAddr, TwoWire &i2c)
 	_bme680.power_mode = BME680_FORCED_MODE;
 
 	Bsec::wireObj = &i2c;
-	Bsec::wireObj->begin();
 
 	beginCommon();
 }
@@ -120,7 +119,6 @@ void Bsec::begin(uint8_t chipSelect, SPIClass &spi)
 	pinMode(chipSelect, OUTPUT);
 	digitalWrite(chipSelect, HIGH);
 	Bsec::spiObj = &spi;
-	Bsec::spiObj->begin();
 
 	beginCommon();
 }
@@ -226,7 +224,7 @@ void Bsec::setConfig(const uint8_t *state)
 {
 	uint8_t workBuffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
 
-	status = bsec_set_configuration(state, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, BSEC_MAX_PROPERTY_BLOB_SIZE);
+	status = bsec_set_configuration(state, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, sizeof(workBuffer));
 }
 
 /* Private functions */
@@ -249,14 +247,14 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 		return false;
 	}
 
-	bsec_input_t inputs[BSEC_MAX_PHYSICAL_SENSOR]; // Temp, Pres, Hum & Gas
+	bsec_input_t inputs[BSEC_MAX_PHYSICAL_SENSOR]; // Temperature, Pressure, Humidity & Gas Resistance
 	uint8_t nInputs = 0, nOutputs = 0;
 
 	if (_data.status & BME680_NEW_DATA_MSK) {
 		if (bme680Settings.process_data & BSEC_PROCESS_TEMPERATURE) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_TEMPERATURE;
 #ifdef BME680_FLOAT_POINT_COMPENSATION
-      inputs[nInputs].signal = _data.temperature;
+			inputs[nInputs].signal = _data.temperature;
 #else
       inputs[nInputs].signal = _data.temperature / 100.0f;
 #endif
@@ -271,7 +269,7 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 		if (bme680Settings.process_data & BSEC_PROCESS_HUMIDITY) {
 			inputs[nInputs].sensor_id = BSEC_INPUT_HUMIDITY;
 #ifdef BME680_FLOAT_POINT_COMPENSATION
-      inputs[nInputs].signal = _data.humidity;
+			inputs[nInputs].signal = _data.humidity;
 #else
       inputs[nInputs].signal = _data.humidity / 1000.0f;
 #endif
@@ -307,9 +305,21 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 
 			for (uint8_t i = 0; i < nOutputs; i++) {
 				switch (_outputs[i].sensor_id) {
-					case BSEC_OUTPUT_IAQ_ESTIMATE:
-						iaqEstimate = _outputs[i].signal;
+					case BSEC_OUTPUT_IAQ:
+						iaq = _outputs[i].signal;
 						iaqAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_STATIC_IAQ:
+						staticIaq = _outputs[i].signal;
+						staticIaqAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_CO2_EQUIVALENT:
+						co2Equivalent = _outputs[i].signal;
+						co2Accuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_BREATH_VOC_EQUIVALENT:
+						breathVocEquivalent = _outputs[i].signal;
+						breathVocAccuracy = _outputs[i].accuracy;
 						break;
 					case BSEC_OUTPUT_RAW_TEMPERATURE:
 						rawTemperature = _outputs[i].signal;
@@ -334,6 +344,14 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 						break;
 					case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY:
 						humidity = _outputs[i].signal;
+						break;
+					case BSEC_OUTPUT_COMPENSATED_GAS:
+						compGasValue = _outputs[i].signal;
+						compGasAccuracy = _outputs[i].accuracy;
+						break;
+					case BSEC_OUTPUT_GAS_PERCENTAGE:
+						gasPercentage = _outputs[i].signal;
+						gasPercentageAcccuracy = _outputs[i].accuracy;
 						break;
 					default:
 						break;
@@ -375,8 +393,18 @@ void Bsec::zeroOutputs(void)
 	rawHumidity = 0.0f;
 	stabStatus = 0.0f;
 	runInStatus = 0.0f;
-	iaqEstimate = 0.0f;
+	iaq = 0.0f;
 	iaqAccuracy = 0;
+	staticIaq = 0.0f;
+	staticIaqAccuracy = 0;
+	co2Equivalent = 0.0f;
+	co2Accuracy = 0;
+	breathVocEquivalent = 0.0f;
+	breathVocAccuracy = 0;
+	compGasValue = 0.0f;
+	compGasAccuracy = 0;
+	gasPercentage = 0.0f;
+	gasPercentageAcccuracy = 0;
 }
 
 /**
@@ -386,12 +414,13 @@ int64_t Bsec::getTimeMs(void)
 {
 	int64_t timeMs = millis();
 
-	if (lastTime > timeMs) { // An overflow occured
-		lastTime = timeMs;
+	if (lastTime > timeMs) { // An overflow occurred
 		millisOverflowCounter++;
 	}
 
-	return timeMs + (millisOverflowCounter * 0xFFFFFFFF);
+	lastTime = timeMs;
+
+	return timeMs + ((int64_t)millisOverflowCounter << 32);
 }
 
 /**
@@ -453,7 +482,7 @@ int8_t Bsec::spiTransfer(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint1
 {
 	int8_t rslt = 0;
 	if(Bsec::spiObj) {
-		Bsec::spiObj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be upto 10MHz
+		Bsec::spiObj->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0)); // Can be up to 10MHz
 	
 		digitalWrite(devId, LOW);
 

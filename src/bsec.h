@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.h
- * @date	31 Jan 2018
- * @version	1.0
+ * @date	20 May 2019
+ * @version	1.1
  *
  */
 
@@ -65,8 +65,9 @@ public:
 	int64_t nextCall;			// Stores the time when the algorithm has to be called next in ms
 	int8_t bme680Status;		// Placeholder for the BME680 driver's error codes
 	bsec_library_return_t status;
-	float iaqEstimate, rawTemperature, pressure, rawHumidity, gasResistance, stabStatus, runInStatus, temperature, humidity;
-	uint8_t iaqAccuracy;
+	float iaq, rawTemperature, pressure, rawHumidity, gasResistance, stabStatus, runInStatus, temperature, humidity,
+	      staticIaq, co2Equivalent, breathVocEquivalent, compGasValue, gasPercentage;
+	uint8_t iaqAccuracy, staticIaqAccuracy, co2Accuracy, breathVocAccuracy, compGasAccuracy, gasPercentageAcccuracy;
 	int64_t outputTimestamp;	// Timestamp in ms of the output
 	static TwoWire *wireObj;
 	static SPIClass *spiObj;

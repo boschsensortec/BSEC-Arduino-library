@@ -84,20 +84,25 @@ extern "C"
 #include <stdint.h>
 #include <stddef.h>
 
-#define BSEC_MAX_PHYSICAL_SENSOR     (7)         /*!< Number of physical sensors that need allocated space before calling bsec_update_subscription() */
-#define BSEC_MAX_PROPERTY_BLOB_SIZE  (304)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
-#define BSEC_MAX_STATE_BLOB_SIZE     (65)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
+#define BSEC_MAX_WORKBUFFER_SIZE     (2048)    /*!< Maximum size (in bytes) of the work buffer */
+#define BSEC_MAX_PHYSICAL_SENSOR     (8)         /*!< Number of physical sensors that need allocated space before calling bsec_update_subscription() */
+#define BSEC_MAX_PROPERTY_BLOB_SIZE  (454)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
+#define BSEC_MAX_STATE_BLOB_SIZE     (139)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
 #define BSEC_SAMPLE_RATE_DISABLED    (65535.0f)      /*!< Sample rate of a disabled sensor */
 #define BSEC_SAMPLE_RATE_ULP         (0.0033333f)           /*!< Sample rate in case of Ultra Low Power Mode */
+#define BSEC_SAMPLE_RATE_CONTINUOUS  (1.0f)    /*!< Sample rate in case of Continuous Mode */ 
 #define BSEC_SAMPLE_RATE_LP          (0.33333f)            /*!< Sample rate in case of Low Power Mode */
-#define BSEC_SAMPLE_RATE_ULP_MEASUREMENT_ON_DEMAND         (0.0f)            /*!< Input value used to trigger an extra measurment (ULP plus) */        
+#define BSEC_SAMPLE_RATE_ULP_MEASUREMENT_ON_DEMAND         (0.0f)            /*!< Input value used to trigger an extra measurement (ULP plus) */        
+#define BSEC_SAMPLE_RATE_HIGH_PERFORMANCE         (0.055556f)            /*!< Sample rate in case of high performance */      
+#define SAMPLE_INTVL_CUSTOM_TPH      (0.066667f)            /*!< Sample rate in case of custom TPH mode */ 
+#define SAMPLE_INTVL_CUSTOM_G        (0.016667f)            /*!< Sample rate in case of custom G mode */  
 
 #define BSEC_PROCESS_PRESSURE       (1 << (BSEC_INPUT_PRESSURE-1))      /*!< process_data bitfield constant for pressure @sa bsec_bme_settings_t */
 #define BSEC_PROCESS_TEMPERATURE    (1 << (BSEC_INPUT_TEMPERATURE-1))   /*!< process_data bitfield constant for temperature @sa bsec_bme_settings_t */
 #define BSEC_PROCESS_HUMIDITY       (1 << (BSEC_INPUT_HUMIDITY-1))      /*!< process_data bitfield constant for humidity @sa bsec_bme_settings_t */
 #define BSEC_PROCESS_GAS            (1 << (BSEC_INPUT_GASRESISTOR-1))   /*!< process_data bitfield constant for gas sensor @sa bsec_bme_settings_t */
-#define BSEC_NUMBER_OUTPUTS         (13)     /*!< Number of outputs, depending on solution */
-#define BSEC_OUTPUT_INCLUDED        (162287)         /*!< bitfield that indicates which outputs are included in the solution */
+#define BSEC_NUMBER_OUTPUTS         (14)     /*!< Number of outputs, depending on solution */
+#define BSEC_OUTPUT_INCLUDED        (1210863)         /*!< bitfield that indicates which outputs are included in the solution */
 
 /*!
  * @brief Enumeration for input (physical) sensors.
@@ -160,6 +165,12 @@ typedef enum
      * Generic heat source 8
      */
 
+    /**                                                                               
+     * @brief Internal input for measure on demand                                    
+     *                                                                                
+     * Value indicates, if a measurement is a mod (measurement on demand)             
+     */                                                                               
+    BSEC_INPUT_IS_MEASUREMENT_ON_DEMAND = 22,     /*!< reserved internal debug input */ 
     
     /**
      * @brief Additional input that disables baseline tracker
@@ -168,7 +179,13 @@ typedef enum
      * 1 - Event 1
      * 2 - Event 2
      */
-    BSEC_INPUT_DISABLE_BASELINE_TRACKER = 23     
+    BSEC_INPUT_DISABLE_BASELINE_TRACKER = 23, 
+
+    /**																								
+     * @brief Additional input that provides information about the state of the profile (1-9)		
+     *																								
+     */																								
+    BSEC_INPUT_PROFILE_PART = 24																	
 } bsec_physical_sensor_t;
 
 /*!
@@ -192,7 +209,10 @@ typedef enum
      * consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four 
      * days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
      */
-    BSEC_OUTPUT_IAQ_ESTIMATE = 1,                           
+    BSEC_OUTPUT_IAQ = 1,                           
+    BSEC_OUTPUT_STATIC_IAQ = 2,                             /*!< Unscaled indoor-air-quality estimate */ 
+    BSEC_OUTPUT_CO2_EQUIVALENT = 3,                         /*!< co2 equivalent estimate [ppm] */   
+    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT = 4,                  /*!< breath VOC concentration estimate [ppm] */    	
 
     /**
      * @brief Temperature sensor signal [degrees Celsius]
@@ -275,8 +295,8 @@ typedef enum
      */
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY = 15,     
 
-    BSEC_OUTPUT_VOC_FEATURE = 18,         					/*!< Reserved internal debug output */
-
+    BSEC_OUTPUT_COMPENSATED_GAS = 18,         			    /*!< Reserved internal debug output */ 	
+	BSEC_OUTPUT_GAS_PERCENTAGE = 21                         /*!< percentage of min and max filtered gas value [%] */
 } bsec_virtual_sensor_t;
 
 /*!
@@ -311,7 +331,7 @@ typedef enum
     BSEC_E_CONFIG_INSUFFICIENTWORKBUFFER = -38,     /*!< Provided work_buffer is not large enough to hold the desired string */
     BSEC_E_CONFIG_INVALIDSTRINGSIZE = -40,          /*!< String size encoded in configuration/state strings passed to bsec_set_[configuration/state]() does not match with the actual string size n_serialized_[settings/state] passed to these functions */
     BSEC_E_CONFIG_INSUFFICIENTBUFFER = -41,         /*!< String buffer insufficient to hold serialized data from BSEC library */
-    BSEC_E_SET_INVALIDCHANNELIDENTIFIER = -100,     /*!< Internal error code */
+    BSEC_E_SET_INVALIDCHANNELIDENTIFIER = -100,     /*!< Internal error code, size of work buffer in setConfig must be set to BSEC_MAX_WORKBUFFER_SIZE */
     BSEC_E_SET_INVALIDLENGTH = -104,                /*!< Internal error code */
     BSEC_W_SC_CALL_TIMING_VIOLATION = 100,          /*!< Difference between actual and defined sampling intervals of bsec_sensor_control() greater than allowed */
     BSEC_W_SC_MODEXCEEDULPTIMELIMIT = 101,          /*!< ULP plus is not allowed because an ULP measurement just took or will take place */ /*MOD_ONLY*/
@@ -377,7 +397,7 @@ typedef struct
     uint8_t sensor_id;          /*!< @brief Identifier of virtual sensor @sa bsec_virtual_sensor_t  */
     
     /**
-     * @brief Accuracy status 0-4
+     * @brief Accuracy status 0-3
      *
      * Some virtual sensors provide a value in the accuracy field. If this is the case, the meaning of the field is as 
      * follows:
@@ -472,7 +492,7 @@ typedef struct
 } bsec_bme_settings_t;
 
 /* internal defines and backward compatibility */
-#define BSEC_STRUCT_NAME            Bsec_1                       /*!< Internal struct name */
+#define BSEC_STRUCT_NAME            Bsec                       /*!< Internal struct name */
 
 /*@}*/
 
