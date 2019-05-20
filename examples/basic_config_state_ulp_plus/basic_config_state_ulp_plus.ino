@@ -24,6 +24,7 @@ void setup(void)
 {
   EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1); // 1st address for the length
   Serial.begin(115200);
+  Wire.begin();
 
   /* Setup button interrupt to trigger ULP plus */
   pinMode(2, INPUT_PULLUP);
@@ -44,7 +45,7 @@ void setup(void)
     BSEC_OUTPUT_RAW_PRESSURE,
     BSEC_OUTPUT_RAW_HUMIDITY,
     BSEC_OUTPUT_RAW_GAS,
-    BSEC_OUTPUT_IAQ_ESTIMATE,
+    BSEC_OUTPUT_IAQ,
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
   };
@@ -60,13 +61,14 @@ void setup(void)
 // Function that is looped forever
 void loop(void)
 {
+  unsigned long time_trigger = millis();
   if (iaqSensor.run()) { // If new data is available
-    output = String(millis());
+    output = String(time_trigger);
     output += ", " + String(iaqSensor.rawTemperature);
     output += ", " + String(iaqSensor.pressure);
     output += ", " + String(iaqSensor.rawHumidity);
     output += ", " + String(iaqSensor.gasResistance);
-    output += ", " + String(iaqSensor.iaqEstimate);
+    output += ", " + String(iaqSensor.iaq);
     output += ", " + String(iaqSensor.iaqAccuracy);
     output += ", " + String(iaqSensor.temperature);
     output += ", " + String(iaqSensor.humidity);
@@ -142,13 +144,13 @@ void updateState(void)
 {
   bool update = false;
   if (stateUpdateCounter == 0) {
-    /* First state update when IAQ accuracy is >= 1 */
+  /* Set a trigger to save the state. Here, the state is saved every STATE_SAVE_PERIOD with the first state being saved once the algorithm achieves full calibration, i.e. iaqAccuracy = 3 */
     if (iaqSensor.iaqAccuracy >= 3) {
       update = true;
       stateUpdateCounter++;
     }
   } else {
-    /* Update every STATE_SAVE_PERIOD minutes */
+    /* Update every STATE_SAVE_PERIOD milliseconds */
     if ((stateUpdateCounter * STATE_SAVE_PERIOD) < millis()) {
       update = true;
       stateUpdateCounter++;

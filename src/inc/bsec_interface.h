@@ -236,7 +236,7 @@ bsec_library_return_t bsec_init(void);
     bsec_sensor_configuration_t requested_virtual_sensors[3];
     uint8_t n_requested_virtual_sensors = 3;
  
-    requested_virtual_sensors[0].sensor_id = BSEC_OUTPUT_IAQ_ESTIMATE;
+    requested_virtual_sensors[0].sensor_id = BSEC_OUTPUT_IAQ;
     requested_virtual_sensors[0].sample_rate = BSEC_SAMPLE_RATE_ULP; 
     requested_virtual_sensors[1].sensor_id = BSEC_OUTPUT_RAW_TEMPERATURE;
     requested_virtual_sensors[1].sample_rate = BSEC_SAMPLE_RATE_ULP; 
@@ -326,7 +326,7 @@ bsec_library_return_t bsec_update_subscription(const bsec_sensor_configuration_t
         {   
             switch(output[i].sensor_id)
             {
-                case BSEC_OUTPUT_IAQ_ESTIMATE:
+                case BSEC_OUTPUT_IAQ:
                     // Retrieve the IAQ results from output[i].signal
                     // and do something with the data
                     break;
@@ -358,7 +358,7 @@ bsec_library_return_t bsec_do_steps(const bsec_input_t * const inputs, const uin
  *
   \code{.c}
     // Example // 
-    bsec_reset_output(BSEC_OUTPUT_IAQ_ESTIMATE);
+    bsec_reset_output(BSEC_OUTPUT_IAQ);
 
   \endcode
  */
