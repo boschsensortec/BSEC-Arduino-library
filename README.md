@@ -163,7 +163,7 @@ Due to possibly various build options for ARM's Cortex-M4's FPU, a variety of st
 
 For example, the line [`feather52832.build.mcu=cortex-m4`](https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/0278a461b790fcfe2dcb85502791eece80c42aef/boards.txt#L38) should become `feather52832.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`
 
-### 6. Verify and upload the example code
+### 5. Verify and upload the example code
 
 Start or restart the Arduino IDE. Open the example code found under ```File>Examples>Bsec software library>Basic```.
 
@@ -171,7 +171,7 @@ Select your board and COM port. Upload the example. Open the Serial monitor. You
 
 Note that not all supported cores have been tested. In such cases, the examples can be found under ```File>Examples>INCOMPATIBLE>Bsec software library>Basic```
 
-### 7. Tested board/core list
+### 6. Tested board/core list
 
 The current list of tested boards include,
 
