@@ -159,7 +159,7 @@ add `*libalgobsec.a:(.literal.* .text.*)`, which should look like,
 
 #### NRF52 - modify the boards.txt file
 
-Due to possibly various build options for ARM's Cortex-M4's FPU, a variety of static libaries can be generated. We offer two options based on whether the FPU is enabled or disabled. The static libraries are stored under the directories `cortex-m4` and `cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`. In order for the Arduino builder to use the correct static library, the directory name should match the internal `build.arch` variable. For the NRF52 core, this seems to be derived from the `build.mcu` variable which is defined in the boards.txt file. One, hence needs to update this variable to use the directory with the floating point enabled static library.
+Due to possibly various build options for ARM's Cortex-M4's FPU, a variety of static libaries can be generated. We offer two options based on whether the FPU is disabled or enabled. The static libraries are stored under the directories `cortex-m4` and `cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard` respectively. In order for the Arduino builder to use the correct static library, the directory name should match the internal `build.arch` variable. For the NRF52 core, this seems to be derived from the `build.mcu` variable which is defined in the boards.txt file. Hence, one needs to update this variable to use the directory with the floating point enabled static library.
 
 For example, the line [`feather52832.build.mcu=cortex-m4`](https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/0278a461b790fcfe2dcb85502791eece80c42aef/boards.txt#L38) should become `feather52832.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`
 
