@@ -39,7 +39,7 @@ Available binaries for download:
 |----------|----------|------------|------------------|------|------|
 | Cortex-ARM | ARMCC | 19-20k | 12-13k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
 | Cortex-ARM | GCC | 20-22k | 12-14k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
-| Cortex-ARN | IAR | 20k | 12-13k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
+| Cortex-ARM | IAR | 20k | 12-13k | 1k | Cortex-M0, M0+, M3, M4, M4_FPU, M7 |
 | Cortex-A* | GCC | 21k | 13k | 1k | Cortex-A7 |
 | AVR_8bit | AVR-GCC | 42k | 25 | 1k | MegaAVR, XMEGA |
 | AVR_32bit | AVR-GCC | 24k | 13k | 1k | 32-bit AVR UC3 |
