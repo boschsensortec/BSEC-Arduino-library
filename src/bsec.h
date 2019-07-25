@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.h
- * @date	20 May 2019
- * @version	1.1
+ * @date	25 July 2019
+ * @version	1.2.1474
  *
  */
 
@@ -92,15 +92,17 @@ public:
 	 * @brief Function to initialize the BSEC library and the BME680 sensor
 	 * @param i2cAddr	: I2C address
 	 * @param i2c		: Pointer to the TwoWire object
+	 * @param idleTask	: Task to be called when idling
 	 */
-	void begin(uint8_t i2cAddr, TwoWire &i2c);
+	void begin(uint8_t i2cAddr, TwoWire &i2c, bme680_delay_fptr_t idleTask = delay_ms);
 	
 	/**
 	 * @brief Function to initialize the BSEC library and the BME680 sensor
 	 * @param chipSelect	: SPI chip select
 	 * @param spi			: Pointer to the SPIClass object
+	 * @param idleTask	: Task to be called when idling
 	 */
-	void begin(uint8_t chipSelect, SPIClass &spi);
+	void begin(uint8_t chipSelect, SPIClass &spi, bme680_delay_fptr_t idleTask = delay_ms);
 
 	/**
 	 * @brief Function that sets the desired sensors and the sample rates

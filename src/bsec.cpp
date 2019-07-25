@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.cpp
- * @date	20 May 2019
- * @version	1.1
+ * @date	25 July 2019
+ * @version	1.2.1474
  *
  */
 
@@ -88,13 +88,13 @@ void Bsec::begin(uint8_t devId, enum bme680_intf intf, bme680_com_fptr_t read, b
 /**
  * @brief Function to initialize the BSEC library and the BME680 sensor
  */
-void Bsec::begin(uint8_t i2cAddr, TwoWire &i2c)
+void Bsec::begin(uint8_t i2cAddr, TwoWire &i2c, bme680_delay_fptr_t idleTask)
 {
 	_bme680.dev_id = i2cAddr;
 	_bme680.intf = BME680_I2C_INTF;
 	_bme680.read = Bsec::i2cRead;
 	_bme680.write = Bsec::i2cWrite;
-	_bme680.delay_ms = Bsec::delay_ms;
+	_bme680.delay_ms = idleTask;
 	_bme680.amb_temp = 25;
 	_bme680.power_mode = BME680_FORCED_MODE;
 
@@ -106,13 +106,13 @@ void Bsec::begin(uint8_t i2cAddr, TwoWire &i2c)
 /**
  * @brief Function to initialize the BSEC library and the BME680 sensor
  */
-void Bsec::begin(uint8_t chipSelect, SPIClass &spi)
+void Bsec::begin(uint8_t chipSelect, SPIClass &spi, bme680_delay_fptr_t idleTask)
 {
 	_bme680.dev_id = chipSelect;
 	_bme680.intf = BME680_SPI_INTF;
 	_bme680.read = Bsec::spiTransfer;
 	_bme680.write = Bsec::spiTransfer;
-	_bme680.delay_ms = Bsec::delay_ms;
+	_bme680.delay_ms = idleTask;
 	_bme680.amb_temp = 25;
 	_bme680.power_mode = BME680_FORCED_MODE;
 
@@ -189,9 +189,9 @@ bool Bsec::run(void)
 		uint16_t meas_dur = 0;
 
 		bme680_get_profile_dur(&meas_dur, &_bme680);
-		delay_ms(meas_dur);
+		_bme680.delay_ms(meas_dur);
 
-		newData = readProcessData(callTimeNs, bme680Settings);	
+		newData = readProcessData(callTimeNs + (meas_dur * INT64_C(1000000)), bme680Settings);	
 	}
 	
 	return newData;
