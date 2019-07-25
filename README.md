@@ -2,7 +2,7 @@
 
 ## About BSEC
 
-Bosch Sensortec Environmental Cluster (BSEC) Software v1.4.7.3 released on April 10th, 2019
+Bosch Sensortec Environmental Cluster (BSEC) Software v1.4.7.4 released on July 3rd, 2019
 
 The BSEC fusion library has been conceptualized to provide a higher-level signal processing and fusion for the BME680. The library receives compensated sensor values from the sensor API. It processes the BME680 signals to provide the requested sensor outputs.
 
