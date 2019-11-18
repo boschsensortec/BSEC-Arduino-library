@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 - 2018 Bosch Sensortec GmbH
+ * Copyright (C) 2017 - 2019 Bosch Sensortec GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.h
- * @date	25 July 2019
- * @version	1.2.1474
+ * @date	18 Nov 2019
+ * @version	1.5.1474
  *
  */
 
@@ -196,6 +196,13 @@ private:
 	// If it overflows, it will have a negative value. Something that should never happen.
 	uint32_t millisOverflowCounter;
 	uint32_t lastTime;
+	
+	uint8_t *bsecConfig;
+	bsec_virtual_sensor_t bsecSensorList[BSEC_NUMBER_OUTPUTS];
+	uint8_t nBsecVirtualSensors;
+	bool validBsecState;
+	uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE];
+	float bsecSampleRate;
 
 	/* Private APIs */
 	/**

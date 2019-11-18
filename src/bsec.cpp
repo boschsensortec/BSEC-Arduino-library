@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 - 2018 Bosch Sensortec GmbH
+ * Copyright (C) 2017 - 2019 Bosch Sensortec GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bsec.cpp
- * @date	25 July 2019
- * @version	1.2.1474
+ * @date	18 Nov 2019
+ * @version	1.5.1474
  *
  */
 
@@ -66,6 +66,9 @@ Bsec::Bsec()
 	outputTimestamp = 0;
 	_tempOffset = 0.0f;
 	status = BSEC_OK;
+	bsecConfig = NULL;
+	bsecSampleRate = BSEC_SAMPLE_RATE_DISABLED;
+	nBsecVirtualSensors = 0;
 	zeroOutputs();
 }
 
@@ -145,10 +148,13 @@ void Bsec::updateSubscription(bsec_virtual_sensor_t sensorList[], uint8_t nSenso
 	uint8_t nVirtualSensors = 0, nSensorSettings = BSEC_MAX_PHYSICAL_SENSOR;
 
 	for (uint8_t i = 0; i < nSensors; i++) {
+		bsecSensorList[i] = sensorList[i];
 		virtualSensors[nVirtualSensors].sensor_id = sensorList[i];
 		virtualSensors[nVirtualSensors].sample_rate = sampleRate;
 		nVirtualSensors++;
 	}
+	nBsecVirtualSensors = nVirtualSensors;
+	bsecSampleRate = sampleRate; // Doesn't take into account multiple updateSubscription calls with varying sample rates
 
 	status = bsec_update_subscription(virtualSensors, nVirtualSensors, sensorSettings, &nSensorSettings);
 	return;
@@ -164,6 +170,12 @@ bool Bsec::run(void)
 	int64_t callTimeMs = getTimeMs();
 	
 	if (callTimeMs >= nextCall) {
+		bsec_init();
+
+		//setConfig(bsecConfig);
+		if(validBsecState)
+			setState(bsecState);
+		updateSubscription(bsecSensorList, nBsecVirtualSensors, bsecSampleRate);
 	
 		bsec_bme_settings_t bme680Settings;
 
@@ -191,7 +203,12 @@ bool Bsec::run(void)
 		bme680_get_profile_dur(&meas_dur, &_bme680);
 		_bme680.delay_ms(meas_dur);
 
-		newData = readProcessData(callTimeNs + (meas_dur * INT64_C(1000000)), bme680Settings);	
+		newData = readProcessData(callTimeNs + (meas_dur * INT64_C(1000000)), bme680Settings);
+		
+		uint8_t workBuffer[BSEC_MAX_STATE_BLOB_SIZE];
+		uint32_t n_serialized_state = BSEC_MAX_STATE_BLOB_SIZE;
+		status = bsec_get_state(0, bsecState, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, BSEC_MAX_STATE_BLOB_SIZE, &n_serialized_state);
+		validBsecState = true;
 	}
 	
 	return newData;
@@ -204,7 +221,11 @@ void Bsec::getState(uint8_t *state)
 {
 	uint8_t workBuffer[BSEC_MAX_STATE_BLOB_SIZE];
 	uint32_t n_serialized_state = BSEC_MAX_STATE_BLOB_SIZE;
-	status = bsec_get_state(0, state, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, BSEC_MAX_STATE_BLOB_SIZE, &n_serialized_state);
+	if(!validBsecState) {
+		status = bsec_get_state(0, bsecState, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, BSEC_MAX_STATE_BLOB_SIZE, &n_serialized_state);
+		validBsecState = true;
+	}
+	memcpy(state, bsecState, BSEC_MAX_STATE_BLOB_SIZE);
 }
 
 /**
@@ -215,16 +236,23 @@ void Bsec::setState(uint8_t *state)
 	uint8_t workBuffer[BSEC_MAX_STATE_BLOB_SIZE];
 
 	status = bsec_set_state(state, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, BSEC_MAX_STATE_BLOB_SIZE);
+	
+	if(status == BSEC_OK) {
+		for(uint32_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++)
+			bsecState[i] = state[i];
+		validBsecState = true;
+	}
 }
 
 /**
  * @brief Function to set the configuration of the algorithm from memory
  */
-void Bsec::setConfig(const uint8_t *state)
+void Bsec::setConfig(const uint8_t *config)
 {
 	uint8_t workBuffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
+	bsecConfig = (uint8_t *)config;
 
-	status = bsec_set_configuration(state, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, sizeof(workBuffer));
+	status = bsec_set_configuration(config, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, sizeof(workBuffer));
 }
 
 /* Private functions */
@@ -293,7 +321,7 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
 	if (nInputs > 0) {
 		nOutputs = BSEC_NUMBER_OUTPUTS;
 		bsec_output_t _outputs[BSEC_NUMBER_OUTPUTS];
-
+		
 		status = bsec_do_steps(inputs, nInputs, _outputs, &nOutputs);
 		if (status != BSEC_OK)
 			return false;
@@ -405,6 +433,7 @@ void Bsec::zeroOutputs(void)
 	compGasAccuracy = 0;
 	gasPercentage = 0.0f;
 	gasPercentageAcccuracy = 0;
+	validBsecState = false;
 }
 
 /**
@@ -496,5 +525,5 @@ int8_t Bsec::spiTransfer(uint8_t devId, uint8_t regAddr, uint8_t *regData, uint1
 		rslt = -1;
 	}
 
-	return rslt;;
+	return rslt;
 }

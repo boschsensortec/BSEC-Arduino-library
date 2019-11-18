@@ -114,6 +114,7 @@ void checkIaqSensorStatus(void)
       Serial.println(output);
     }
   }
+  iaqSensor.status = BSEC_OK;
 }
 
 void errLeds(void)
