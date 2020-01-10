@@ -1,46 +1,37 @@
 /**
- * Copyright (C) 2017 - 2019 Bosch Sensortec GmbH
+ * Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
+ *
+ * BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * Neither the name of the copyright holder nor the names of the
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
- * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- * OR CONSEQUENTIAL DAMAGES(INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
- *
- * The information provided is believed to be accurate and reliable.
- * The copyright holder assumes no responsibility
- * for the consequences of use
- * of such information nor for any infringement of patents or
- * other rights of third parties which may result from its use.
- * No license is granted by implication or otherwise under any patent or
- * patent rights of the copyright holder.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
  * @file	bsec.cpp
- * @date	18 Nov 2019
+ * @date	10 Jan 2020
  * @version	1.5.1474
  *
  */
@@ -67,8 +58,7 @@ Bsec::Bsec()
 	_tempOffset = 0.0f;
 	status = BSEC_OK;
 	bsecConfig = NULL;
-	bsecSampleRate = BSEC_SAMPLE_RATE_DISABLED;
-	nBsecVirtualSensors = 0;
+	nSensorSettings = BSEC_MAX_PHYSICAL_SENSOR;
 	zeroOutputs();
 }
 
@@ -131,6 +121,36 @@ void Bsec::begin(uint8_t chipSelect, SPIClass &spi, bme680_delay_fptr_t idleTask
  */
 void Bsec::beginCommon(void)
 {
+	virtualSensors[0].sensor_id = BSEC_OUTPUT_IAQ;
+	virtualSensors[1].sensor_id = BSEC_OUTPUT_STATIC_IAQ;
+	virtualSensors[2].sensor_id = 	BSEC_OUTPUT_CO2_EQUIVALENT;
+	virtualSensors[3].sensor_id = 	BSEC_OUTPUT_BREATH_VOC_EQUIVALENT;
+	virtualSensors[4].sensor_id = 	BSEC_OUTPUT_RAW_TEMPERATURE;
+	virtualSensors[5].sensor_id = 	BSEC_OUTPUT_RAW_PRESSURE;
+	virtualSensors[6].sensor_id = 	BSEC_OUTPUT_RAW_HUMIDITY;
+	virtualSensors[7].sensor_id = 	BSEC_OUTPUT_RAW_GAS;
+	virtualSensors[8].sensor_id = 	BSEC_OUTPUT_STABILIZATION_STATUS;
+	virtualSensors[9].sensor_id = 	BSEC_OUTPUT_RUN_IN_STATUS;
+	virtualSensors[10].sensor_id = 	BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE;
+	virtualSensors[11].sensor_id = 	BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY;
+	virtualSensors[12].sensor_id = 	BSEC_OUTPUT_COMPENSATED_GAS;
+	virtualSensors[13].sensor_id = 	BSEC_OUTPUT_GAS_PERCENTAGE;
+	
+	virtualSensors[0].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[1].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[2].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[3].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[4].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[5].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[6].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[7].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[8].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[9].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[10].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[11].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[12].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	virtualSensors[13].sample_rate = BSEC_SAMPLE_RATE_DISABLED;
+	
 	status = bsec_init();
 
 	getVersion();
@@ -143,39 +163,39 @@ void Bsec::beginCommon(void)
  */
 void Bsec::updateSubscription(bsec_virtual_sensor_t sensorList[], uint8_t nSensors, float sampleRate)
 {
-	bsec_sensor_configuration_t virtualSensors[BSEC_NUMBER_OUTPUTS],
-	        sensorSettings[BSEC_MAX_PHYSICAL_SENSOR];
-	uint8_t nVirtualSensors = 0, nSensorSettings = BSEC_MAX_PHYSICAL_SENSOR;
-
-	for (uint8_t i = 0; i < nSensors; i++) {
-		bsecSensorList[i] = sensorList[i];
-		virtualSensors[nVirtualSensors].sensor_id = sensorList[i];
-		virtualSensors[nVirtualSensors].sample_rate = sampleRate;
-		nVirtualSensors++;
+	for(uint8_t i = 0; i < nSensors; i++)
+	{
+		for(uint8_t j = 0; j < BSEC_NUMBER_OUTPUTS; j++) {
+			if(virtualSensors[j].sensor_id == sensorList[i]) {
+				virtualSensors[j].sample_rate = sampleRate;
+			}
+		}
 	}
-	nBsecVirtualSensors = nVirtualSensors;
-	bsecSampleRate = sampleRate; // Doesn't take into account multiple updateSubscription calls with varying sample rates
 
-	status = bsec_update_subscription(virtualSensors, nVirtualSensors, sensorSettings, &nSensorSettings);
+	status = bsec_update_subscription(virtualSensors, BSEC_NUMBER_OUTPUTS, sensorSettings, &nSensorSettings);
 	return;
 }
 
 /**
  * @brief Callback from the user to trigger reading of data from the BME680, process and store outputs
  */
-bool Bsec::run(void)
+bool Bsec::run(int64_t timeMilliseconds)
 {
 	bool newData = false;
 	/* Check if the time has arrived to call do_steps() */
-	int64_t callTimeMs = getTimeMs();
+	int64_t callTimeMs = timeMilliseconds;
+	
+	if(callTimeMs < 0) // Use millis
+		callTimeMs = getTimeMs();
 	
 	if (callTimeMs >= nextCall) {
 		bsec_init();
 
-		//setConfig(bsecConfig);
 		if(validBsecState)
 			setState(bsecState);
-		updateSubscription(bsecSensorList, nBsecVirtualSensors, bsecSampleRate);
+		
+		nSensorSettings = BSEC_MAX_PHYSICAL_SENSOR;
+		status = bsec_update_subscription(virtualSensors, BSEC_NUMBER_OUTPUTS, sensorSettings, &nSensorSettings);
 	
 		bsec_bme_settings_t bme680Settings;
 
