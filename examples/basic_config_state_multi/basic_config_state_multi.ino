@@ -1,20 +1,20 @@
 #include <EEPROM.h>
 #include "bsec.h"
 /* Configure the BSEC library with information about the sensor
- *  18v/33v = Voltage at Vdd. 1.8V or 3.3V
- *  3s/300s = BSEC operating mode, BSEC_SAMPLE_RATE_LP or BSEC_SAMPLE_RATE_ULP
- *  4d/28d = Operating age of the sensor in days
- *  generic_18v_3s_4d
- *  generic_18v_3s_28d
- *  generic_18v_300s_4d
- *  generic_18v_300s_28d
- *  generic_33v_3s_4d
- *  generic_33v_3s_28d
- *  generic_33v_300s_4d
- *  generic_33v_300s_28d
- */
+    18v/33v = Voltage at Vdd. 1.8V or 3.3V
+    3s/300s = BSEC operating mode, BSEC_SAMPLE_RATE_LP or BSEC_SAMPLE_RATE_ULP
+    4d/28d = Operating age of the sensor in days
+    generic_18v_3s_4d
+    generic_18v_3s_28d
+    generic_18v_300s_4d
+    generic_18v_300s_28d
+    generic_33v_3s_4d
+    generic_33v_3s_28d
+    generic_33v_300s_4d
+    generic_33v_300s_28d
+*/
 const uint8_t bsec_config_iaq[] = {
-  #include "config/generic_33v_3s_4d/bsec_iaq.txt"
+#include "config/generic_33v_3s_4d/bsec_iaq.txt"
 };
 
 #define STATE_SAVE_PERIOD	UINT32_C(300000) // 360 minutes - 4 times a day
@@ -90,9 +90,9 @@ void loop(void)
   } else {
     checkIaqSensorStatus();
   }
-  
+
   time_trigger = millis();
-    if (iaqSensor2.run()) { // If new data is available
+  if (iaqSensor2.run()) { // If new data is available
     output = "2, " + String(time_trigger);
     output += ", " + String(iaqSensor2.rawTemperature);
     output += ", " + String(iaqSensor2.pressure);
@@ -136,7 +136,7 @@ void checkIaqSensorStatus(void)
     }
   }
   iaqSensor1.status = BSEC_OK;
-  
+
   if (iaqSensor2.status != BSEC_OK) {
     if (iaqSensor2.status < BSEC_OK) {
       output = "BSEC error code : " + String(iaqSensor2.status);
@@ -180,12 +180,12 @@ void loadState(void)
 
     for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++) {
       bsecState1[i] = EEPROM.read(i + 1);
-	  bsecState2[i] = EEPROM.read(i + 1 + BSEC_MAX_STATE_BLOB_SIZE);
+      bsecState2[i] = EEPROM.read(i + 1 + BSEC_MAX_STATE_BLOB_SIZE);
       Serial.println(String(bsecState1[i], HEX) + ", " + String(bsecState2[i], HEX));
     }
 
     iaqSensor1.setState(bsecState1);
-	iaqSensor2.setState(bsecState2);
+    iaqSensor2.setState(bsecState2);
     checkIaqSensorStatus();
   } else {
     // Erase the EEPROM with zeroes
@@ -193,7 +193,7 @@ void loadState(void)
 
     for (uint16_t i = 0; i < (N_SENSORS * BSEC_MAX_STATE_BLOB_SIZE) + 1; i++) {
       EEPROM.write(i, 0);
-	}
+    }
 
     EEPROM.commit();
   }
@@ -218,14 +218,14 @@ void updateState(void)
 
   if (update) {
     iaqSensor1.getState(bsecState1);
-	iaqSensor2.getState(bsecState2);
+    iaqSensor2.getState(bsecState2);
     checkIaqSensorStatus();
 
     Serial.println("Writing state(s) to EEPROM");
 
     for (uint16_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE ; i++) {
       EEPROM.write(i + 1, bsecState1[i]);
-	  EEPROM.write(i + 1 + BSEC_MAX_STATE_BLOB_SIZE, bsecState2[i]);
+      EEPROM.write(i + 1 + BSEC_MAX_STATE_BLOB_SIZE, bsecState2[i]);
       Serial.println(String(bsecState1[i], HEX) + ", " + String(bsecState2[i], HEX));
     }
 

@@ -10,9 +10,9 @@ The sensor driver package includes bme680.h, bme680.c and bme680_defs.h files
 
 File          | Version | Date
 --------------|---------|-------------
-bme680.c      |  3.5.9  | 19 Jun 2018
-bme680.h      |  3.5.9  | 19 Jun 2018
-bme680_defs.h |  3.5.9  | 19 Jun 2018  
+bme680.c      |  3.5.10  | 23 Jan 2020
+bme680.h      |  3.5.10  | 23 Jan 2020
+bme680_defs.h |  3.5.10  | 23 Jan 2020  
 
 ## Integration details
 
@@ -279,4 +279,4 @@ int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint1
 
 ```
 
-## Copyright (C) 2017 - 2018 Bosch Sensortec GmbH
+## Copyright (C) 2020 Bosch Sensortec GmbH. All rights reserved.
