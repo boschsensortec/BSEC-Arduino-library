@@ -1,4 +1,4 @@
-/* Thanks to Dmitry for the sketch(https://community.bosch-sensortec.com/t5/user/viewprofilepage/user-id/4285) */
+/* Thanks to Dmitry for the sketch */
 #include <Arduino.h>
 #include <bsec.h>
 /* Configure the BSEC library with information about the sensor
