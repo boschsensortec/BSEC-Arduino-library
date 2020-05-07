@@ -184,4 +184,4 @@ The current list of tested boards include,
 | Esp32 | Sparkfun ESP32 Thing | v1.0.3-rc1 | https://github.com/espressif/arduino-esp32 |
 | Esp8266 | Adafruit Feather HUZZAH | Upstream of v2.5.1 SHA-1 hash 625c3a62c4991347e8298fb5e4021bc6f6df7099 | https://github.com/esp8266/Arduino |
 
-## Copyright (C) 2017 - 2019 Bosch Sensortec GmbH
+## Copyright (C) 2020 Bosch Sensortec GmbH. All rights reserved.

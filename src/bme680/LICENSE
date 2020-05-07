@@ -1,9 +1,3 @@
-The binaries and includes for the core BSEC library in this repository are licensed 
-under the Software license agreement described in the link 
-https://ae-bst.resource.bosch.com/media/_tech/media/bsec/2017-07-17_ClickThrough_License_Terms_Environmentalib_SW_CLEAN.pdf
-
-The Arduino wrapper and BME680 Sensor API are licensed under the following license.
-
 Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
 
 BSD-3-Clause
@@ -12,7 +6,7 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+   notice, this list of conditions and the following disclaimer.
 
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
