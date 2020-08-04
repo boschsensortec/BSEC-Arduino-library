@@ -1,4 +1,4 @@
-# Instructions for using the BSEC Arduino Library in Arduino 1.8.9
+# Instructions for using the BSEC Arduino Library in Arduino 1.8.13
 
 ## About BSEC
 
@@ -75,7 +75,7 @@ The BSEC software is only available for download or use after accepting the soft
 
 ### 1. Install the latest Arduino IDE
 
-As of this publication, the latest Arduino IDE 1.8.9 can be downloaded from this [link](https://www.arduino.cc/download_handler.php)
+As of this publication, the latest Arduino IDE 1.8.13 can be downloaded from this [link](https://www.arduino.cc/download_handler.php)
 
 ### 2. Install the BSEC library
 
@@ -156,12 +156,6 @@ add `*libalgobsec.a:(.literal.* .text.*)`, which should look like,
     *(.rodata._ZZ*__PRETTY_FUNCTION__)
     *(.rodata._ZZ*__func__)
 ```
-
-#### NRF52 - modify the boards.txt file
-
-Due to possibly various build options for ARM's Cortex-M4's FPU, a variety of static libaries can be generated. We offer two options based on whether the FPU is disabled or enabled. The static libraries are stored under the directories `cortex-m4` and `cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard` respectively. In order for the Arduino builder to use the correct static library, the directory name should match the internal `build.arch` variable. For the NRF52 core, this seems to be derived from the `build.mcu` variable which is defined in the boards.txt file. Hence, one needs to update this variable to use the directory with the floating point enabled static library.
-
-For example, the line [`feather52832.build.mcu=cortex-m4`](https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/0278a461b790fcfe2dcb85502791eece80c42aef/boards.txt#L38) should become `feather52832.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard`
 
 ### 5. Verify and upload the example code
 
