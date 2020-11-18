@@ -1,6 +1,21 @@
 #include <EEPROM.h>
 #include "bsec.h"
-#include "bsec_serialized_configurations_iaq.h"
+/* Configure the BSEC library with information about the sensor
+    18v/33v = Voltage at Vdd. 1.8V or 3.3V
+    3s/300s = BSEC operating mode, BSEC_SAMPLE_RATE_LP or BSEC_SAMPLE_RATE_ULP
+    4d/28d = Operating age of the sensor in days
+    generic_18v_3s_4d
+    generic_18v_3s_28d
+    generic_18v_300s_4d
+    generic_18v_300s_28d
+    generic_33v_3s_4d
+    generic_33v_3s_28d
+    generic_33v_300s_4d
+    generic_33v_300s_28d
+*/
+const uint8_t bsec_config_iaq[] = {
+#include "config/generic_33v_3s_4d/bsec_iaq.txt"
+};
 
 #define STATE_SAVE_PERIOD	UINT32_C(360 * 60 * 1000) // 360 minutes - 4 times a day
 
@@ -22,6 +37,7 @@ void setup(void)
 {
   EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1); // 1st address for the length
   Serial.begin(115200);
+  Wire.begin();
 
   iaqSensor.begin(BME680_I2C_ADDR_PRIMARY, Wire);
   output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
@@ -39,6 +55,7 @@ void setup(void)
   };
 
   iaqSensor.updateSubscription(sensorList1, 2, BSEC_SAMPLE_RATE_ULP);
+  checkIaqSensorStatus();
   
   bsec_virtual_sensor_t sensorList2[5] = {
     BSEC_OUTPUT_RAW_TEMPERATURE,

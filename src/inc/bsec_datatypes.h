@@ -1,16 +1,16 @@
-/*
- * Copyright (C) 2015, 2016, 2017 Robert Bosch. All Rights Reserved. 
+/**
+ * Copyright (C) Bosch Sensortec GmbH. All Rights Reserved. Confidential.
  *
  * Disclaimer
  *
  * Common:
  * Bosch Sensortec products are developed for the consumer goods industry. They may only be used
- * within the parameters of the respective valid product data sheet.  Bosch Sensortec products are
+ * within the parameters of the respective valid product data sheet. Bosch Sensortec products are
  * provided with the express understanding that there is no warranty of fitness for a particular purpose.
  * They are not fit for use in life-sustaining, safety or security sensitive systems or any system or device
  * that may lead to bodily harm or property damage if the system or device malfunctions. In addition,
  * Bosch Sensortec products are not fit for use in products which interact with motor vehicle systems.
- * The resale and/or use of products are at the purchasers own risk and his own responsibility. The
+ * The resale and/or use of products are at the purchaser's own risk and his own responsibility. The
  * examination of fitness for the intended use is the sole responsibility of the Purchaser.
  *
  * The purchaser shall indemnify Bosch Sensortec from all third party claims, including any claims for
@@ -90,6 +90,7 @@ extern "C"
 #define BSEC_MAX_STATE_BLOB_SIZE     (139)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
 #define BSEC_SAMPLE_RATE_DISABLED    (65535.0f)      /*!< Sample rate of a disabled sensor */
 #define BSEC_SAMPLE_RATE_ULP         (0.0033333f)           /*!< Sample rate in case of Ultra Low Power Mode */
+#define BSEC_SAMPLE_RATE_CONTINUOUS  (1.0f)    /*!< Sample rate in case of Continuous Mode */ 
 #define BSEC_SAMPLE_RATE_LP          (0.33333f)            /*!< Sample rate in case of Low Power Mode */
 #define BSEC_SAMPLE_RATE_ULP_MEASUREMENT_ON_DEMAND         (0.0f)            /*!< Input value used to trigger an extra measurment (ULP plus) */        
 
@@ -387,12 +388,12 @@ typedef struct
      * Some virtual sensors provide a value in the accuracy field. If this is the case, the meaning of the field is as 
      * follows:
      *
-     * | Name                       | Value |  Accuracy description                                       |
-     * |----------------------------|-------|-------------------------------------------------------------|
-     * | UNRELIABLE                 |   0   | Sensor data is unreliable, the sensor must be calibrated    |
-     * | LOW_ACCURACY               |   1   | Low accuracy, sensor should be calibrated                   |
-     * | MEDIUM_ACCURACY            |   2   | Medium accuracy, sensor calibration may improve performance |
-     * | HIGH_ACCURACY              |   3   | High accuracy                                               |
+     * | Name                       | Value |  Accuracy description                                                                                       |
+     * |----------------------------|-------|-------------------------------------------------------------------------------------------------------------|
+     * | UNRELIABLE                 |   0   | Sensor data is unreliable, the sensor must be calibrated                                                    |
+     * | LOW_ACCURACY               |   1   | Low accuracy, sensor should be calibrated                                                                   |
+     * | MEDIUM_ACCURACY            |   2   | Medium accuracy, sensor calibration may improve performance                                                 |
+     * | HIGH_ACCURACY              |   3   | High accuracy                                                                                               |
      *
      * For example:
      * 
@@ -409,12 +410,12 @@ typedef struct
      *   performed automatically in the background if the sensor is exposed to clean and polluted air for approximately 
      *   30 minutes each.
      * 
-     *   | Virtual sensor             | Value |  Accuracy description                                           |
-     *   |----------------------------|-------|-----------------------------------------------------------------|
-     *   | IAQ                        |   0   | The sensor is not yet stabilized or in a run-in status           |
-     *   |                            |   1   | Calibration required                                            |
-     *   |                            |   2   | Calibration on-going                                            |
-     *   |                            |   3   | Calibration is done, now IAQ estimate achieves best performance  |
+     *   | Virtual sensor             | Value |  Accuracy description                                                                                                                                         |
+     *   |----------------------------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+     *   | IAQ                        |   0   | Stabilization / run-in ongoing                                                                                                                                |
+     *   |                            |   1   | Low accuracy,to reach high accuracy(3),please expose sensor once to good air (e.g. outdoor air) and bad air (e.g. box with exhaled breath) for auto-trimming  |
+     *   |                            |   2   | Medium accuracy: auto-trimming ongoing                                                                                                                        |
+     *   |                            |   3   | High accuracy                                                                                                                                                 |
      */     
     uint8_t accuracy;           
 } bsec_output_t;

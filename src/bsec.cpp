@@ -31,8 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @file    bsec.cpp
- * @date    10 Jan 2020
- * @version 1.5.1474
+ * @date    18 Nov 2020
  *
  */
 
@@ -282,9 +281,9 @@ void Bsec::getState(uint8_t *state)
  */
 void Bsec::setState(uint8_t *state)
 {
-    uint8_t workBuffer[BSEC_MAX_STATE_BLOB_SIZE];
+    uint8_t workBuffer[BSEC_MAX_WORKBUFFER_SIZE];
 
-    status = bsec_set_state(state, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, BSEC_MAX_STATE_BLOB_SIZE);
+    status = bsec_set_state(state, BSEC_MAX_STATE_BLOB_SIZE, workBuffer, sizeof(workBuffer));
 
     if (status == BSEC_OK)
     {
@@ -301,7 +300,7 @@ void Bsec::setState(uint8_t *state)
  */
 void Bsec::setConfig(const uint8_t *config)
 {
-    uint8_t workBuffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
+    uint8_t workBuffer[BSEC_MAX_WORKBUFFER_SIZE];
 
     bsecConfig = (uint8_t *)config;
 

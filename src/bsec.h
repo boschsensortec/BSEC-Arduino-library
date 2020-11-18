@@ -31,8 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @file    bsec.h
- * @date    10 Jan 2020
- * @version 1.5.1474
+ * @date    18 Nov 2020
  *
  */
 

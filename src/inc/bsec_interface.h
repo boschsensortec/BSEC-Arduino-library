@@ -1,16 +1,16 @@
-/*
- * Copyright (C) 2015, 2016, 2017 Robert Bosch. All Rights Reserved. 
+/**
+ * Copyright (C) Bosch Sensortec GmbH. All Rights Reserved. Confidential.
  *
  * Disclaimer
  *
  * Common:
  * Bosch Sensortec products are developed for the consumer goods industry. They may only be used
- * within the parameters of the respective valid product data sheet.  Bosch Sensortec products are
+ * within the parameters of the respective valid product data sheet. Bosch Sensortec products are
  * provided with the express understanding that there is no warranty of fitness for a particular purpose.
  * They are not fit for use in life-sustaining, safety or security sensitive systems or any system or device
  * that may lead to bodily harm or property damage if the system or device malfunctions. In addition,
  * Bosch Sensortec products are not fit for use in products which interact with motor vehicle systems.
- * The resale and/or use of products are at the purchasers own risk and his own responsibility. The
+ * The resale and/or use of products are at the purchaser's own risk and his own responsibility. The
  * examination of fitness for the intended use is the sole responsibility of the Purchaser.
  *
  * The purchaser shall indemnify Bosch Sensortec from all third party claims, including any claims for

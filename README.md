@@ -2,7 +2,7 @@
 
 ## About BSEC
 
-Bosch Sensortec Environmental Cluster (BSEC) Software v1.4.7.4 released on July 3rd, 2019
+Bosch Sensortec Environmental Cluster (BSEC) Software v1.4.8.0 released on July 8th, 2020
 
 The BSEC fusion library has been conceptualized to provide a higher-level signal processing and fusion for the BME680. The library receives compensated sensor values from the sensor API. It processes the BME680 signals to provide the requested sensor outputs.
 
@@ -69,7 +69,7 @@ Advantages
 
 The BSEC software is only available for download or use after accepting the software license agreement. By using this library, you have agreed to the terms of the license agreement.
 
-[BSEC license agreement](https://ae-bst.resource.bosch.com/media/_tech/media/bsec/2017-07-17_ClickThrough_License_Terms_Environmentalib_SW_CLEAN.pdf)
+[BSEC license agreement](https://www.bosch-sensortec.com/media/boschsensortec/downloads/bsec/2017-07-17_clickthrough_license_terms_environmentalib_sw_clean.pdf)
 
 ## Installation and getting started
 
@@ -131,33 +131,7 @@ Should be,
 recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" --specs=nano.specs --specs=nosys.specs {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group {compiler.arm.cmsis.ldflags} -lm "{build.path}/{archive_file}" {compiler.libraries.ldflags} -Wl,--end-group
 ```
 
-### 4. Additional core specific modifications
-
-#### ESP8266 - modify the linker script header
-
-Due to the architecture of the ESP8266's memories and current size of the BSEC library, upon compilation, you will receive an error: ```section `.text1' will not fit in region `iram1_0_seg'```. In order to solve this, you will need to modify the linker script and specifically define where the library should be placed in memory.
-
-You will need to modify the file `eagle.app.v6.common.ld.h` typically found in `{YourESP8266PPackageDirectory}\tools\sdk\ld`. 
-
-With reference to the linker script [here](https://github.com/esp8266/Arduino/blob/master/tools/sdk/ld/eagle.app.v6.common.ld.h),
-
-After line [`177 *libwps.a:(.literal.* .text.*)`](https://github.com/esp8266/Arduino/blob/68ee1216454eeea49dd3452c6ff21bc748f397b6/tools/sdk/ld/eagle.app.v6.common.ld.h#L177),
-add `*libalgobsec.a:(.literal.* .text.*)`, which should look like,
-
-```
-    *libwpa.a:(.literal.* .text.*)
-    *libwpa2.a:(.literal.* .text.*)
-    *libwps.a:(.literal.* .text.*)
-    *libalgobsec.a:(.literal.* .text.*)
-    *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom0.text.* .irom.text .irom.text.*)
-
-    /* __FUNCTION__ locals */
-    *(.rodata._ZZ*__FUNCTION__)
-    *(.rodata._ZZ*__PRETTY_FUNCTION__)
-    *(.rodata._ZZ*__func__)
-```
-
-### 5. Verify and upload the example code
+### 4. Verify and upload the example code
 
 Start or restart the Arduino IDE. Open the example code found under ```File>Examples>Bsec software library>Basic```.
 
@@ -165,13 +139,13 @@ Select your board and COM port. Upload the example. Open the Serial monitor. You
 
 Note that not all supported cores have been tested. In such cases, the examples can be found under ```File>Examples>INCOMPATIBLE>Bsec software library>Basic```
 
-### 6. Tested board/core list
+### 5. Tested board/core list
 
 The current list of tested boards include,
 
 | Core MCU | Tested boards | Arduino core version | Arduino core repository |
 |----------|---------------|----------------------|-------------------------|
-| Atmega 2560 | Arduino MEGA 2560 | Shipped with Arduino 1.8.9 | Shipped with Arduino 1.8.9 |
+| Atmega 2560 | Arduino MEGA 2560 | Shipped with Arduino 1.8.13 | Shipped with Arduino 1.8.13 |
 | Cortex-m0+ | Arduino Zero | Upstream of v1.6.21 SHA-1 hash 86081cbf35fc0df0612a1b2c054877ff6788f9e7 | https://github.com/arduino/ArduinoCore-samd |
 | Cortex-m3 | Arduino Due | SHA-1 hash 0a4c3b196a02e48e31b752a05d8c8064007874dc | https://github.com/arduino/ArduinoCore-sam |
 | Cortex-m4 with FPU | Adafruit BlueFruit NRF52 Feather | Upstream of v0.10.1 SHA-1 hash 11614dae701a35f905d09792c7388d648b125369 | https://github.com/adafruit/Adafruit_nRF52_Arduino |
