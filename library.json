@@ -14,8 +14,7 @@
   "frameworks": "arduino",
   "platforms": "*",
   "build": {
-    "includeDir": "src/inc",
-    "extraScript": "extra_script.py"
+    "builder": "ArduinoLibBuilder"
   },
   "examples": [
     {
