@@ -199,7 +199,7 @@ bool Bsec::run(int64_t timeMilliseconds)
 
     if (callTimeMs >= nextCall)
     {
-        bsec_init();
+        // bsec_init();
 
         if (validBsecState)
         {
@@ -388,7 +388,7 @@ bool Bsec::readProcessData(int64_t currTimeNs, bsec_bme_settings_t bme680Setting
             return false;
         }
 
-        zeroOutputs();
+        // zeroOutputs();
 
         if (nOutputs > 0)
         {
