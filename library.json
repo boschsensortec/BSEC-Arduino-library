@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/BoschSensortec/BSEC-Arduino-library"
   },
-  "version": "1.6.1480",
+  "version": "1.7.1492",
   "authors": {
     "name": "Bosch Sensortec",
     "email": "contact@bosch-sensortec.com"
@@ -28,20 +28,20 @@
       "base": "examples/basic_config_state",
       "files": ["basic_config_state.ino"]
     },
-    {
-      "name": "Basic usage with config state saves and multiple sensors",
-      "base": "examples/basic_config_state_multi",
-      "files": ["basic_config_state_multi.ino"]
-    },
+	{
+      "name": "Basic usage with config state saves and triggered ULP plus and LP measurements for different set of parameters",
+	  "base": "examples/basic_config_state_ULP_LP",       
+	  "files": ["basic_config_state_ULP_LP.ino"]     
+	},
     {
       "name": "Basic usage with config state saves and triggered ULP plus measurements",
       "base": "examples/basic_config_state_ulp_plus",
       "files": ["basic_config_state_ulp_plus.ino"]
     },
     {
-      "name": "ESP32 deep sleep",
-      "base": "examples/esp32DeepSleep",
-      "files": ["esp32DeepSleep.ino"]
+      "name": "Octopus Demo",
+      "base": "examples/octopus_demo",
+      "files": ["octopus_demo.ino"]
     }
   ]
 }

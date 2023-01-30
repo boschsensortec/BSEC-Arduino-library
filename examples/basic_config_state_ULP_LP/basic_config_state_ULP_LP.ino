@@ -17,6 +17,7 @@ const uint8_t bsec_config_iaq[] = {
 #include "config/generic_33v_3s_4d/bsec_iaq.txt"
 };
 
+
 #define STATE_SAVE_PERIOD	UINT32_C(360 * 60 * 1000) // 360 minutes - 4 times a day
 
 // Helper functions declarations
@@ -37,9 +38,9 @@ void setup(void)
 {
   EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1); // 1st address for the length
   Serial.begin(115200);
-  Wire.begin();
-
-  iaqSensor.begin(BME680_I2C_ADDR_PRIMARY, Wire);
+  delay(1000);
+  pinMode(LED_BUILTIN, OUTPUT);
+  iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
   output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
   Serial.println(output);
   checkIaqSensorStatus();
@@ -50,26 +51,25 @@ void setup(void)
   loadState();
 
   bsec_virtual_sensor_t sensorList1[2] = {
-    BSEC_OUTPUT_RAW_GAS,
     BSEC_OUTPUT_IAQ,
+    BSEC_OUTPUT_RAW_GAS
   };
 
   iaqSensor.updateSubscription(sensorList1, 2, BSEC_SAMPLE_RATE_ULP);
-  checkIaqSensorStatus();
   
   bsec_virtual_sensor_t sensorList2[5] = {
     BSEC_OUTPUT_RAW_TEMPERATURE,
     BSEC_OUTPUT_RAW_PRESSURE,
     BSEC_OUTPUT_RAW_HUMIDITY,
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY
   };
 
   iaqSensor.updateSubscription(sensorList2, 5, BSEC_SAMPLE_RATE_LP);
   checkIaqSensorStatus();
 
   // Print the header
-  output = "Timestamp [ms], raw temperature [°C], pressure [hPa], raw relative humidity [%], gas [Ohm], IAQ, IAQ accuracy, temperature [°C], relative humidity [%]";
+  output = "Timestamp [ms], IAQ, IAQ accuracy, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], comp temp[°C], comp humidity [%]";
   Serial.println(output);
 }
 
@@ -78,16 +78,18 @@ void loop(void)
 {
   unsigned long time_trigger = millis();
   if (iaqSensor.run()) { // If new data is available
+    digitalWrite(LED_BUILTIN, LOW);
     output = String(time_trigger);
+    output += ", " + String(iaqSensor.iaq);
+    output += ", " + String(iaqSensor.iaqAccuracy);
     output += ", " + String(iaqSensor.rawTemperature);
     output += ", " + String(iaqSensor.pressure);
     output += ", " + String(iaqSensor.rawHumidity);
     output += ", " + String(iaqSensor.gasResistance);
-    output += ", " + String(iaqSensor.iaq);
-    output += ", " + String(iaqSensor.iaqAccuracy);
     output += ", " + String(iaqSensor.temperature);
     output += ", " + String(iaqSensor.humidity);
     Serial.println(output);
+    digitalWrite(LED_BUILTIN, HIGH);
     updateState();
   } else {
     checkIaqSensorStatus();
@@ -97,26 +99,26 @@ void loop(void)
 // Helper function definitions
 void checkIaqSensorStatus(void)
 {
-  if (iaqSensor.status != BSEC_OK) {
-    if (iaqSensor.status < BSEC_OK) {
-      output = "BSEC error code : " + String(iaqSensor.status);
+  if (iaqSensor.bsecStatus != BSEC_OK) {
+    if (iaqSensor.bsecStatus < BSEC_OK) {
+      output = "BSEC error code : " + String(iaqSensor.bsecStatus);
       Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
     } else {
-      output = "BSEC warning code : " + String(iaqSensor.status);
+      output = "BSEC warning code : " + String(iaqSensor.bsecStatus);
       Serial.println(output);
     }
   }
 
-  if (iaqSensor.bme680Status != BME680_OK) {
-    if (iaqSensor.bme680Status < BME680_OK) {
-      output = "BME680 error code : " + String(iaqSensor.bme680Status);
+  if (iaqSensor.bme68xStatus != BME68X_OK) {
+    if (iaqSensor.bme68xStatus < BME68X_OK) {
+      output = "BME68X error code : " + String(iaqSensor.bme68xStatus);
       Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
     } else {
-      output = "BME680 warning code : " + String(iaqSensor.bme680Status);
+      output = "BME68X warning code : " + String(iaqSensor.bme68xStatus);
       Serial.println(output);
     }
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) Bosch Sensortec GmbH. All Rights Reserved. Confidential.
  *
  * Disclaimer
@@ -56,10 +56,7 @@
  * It is not allowed to deliver the source code of the Software to any third party without permission of
  * Bosch Sensortec.
  *
- */
- /*!
- * 
- * @file        bsec_interface.h
+ * @file     bsec_interface.h  
  *
  * @brief
  * Contains the API for BSEC
@@ -105,18 +102,18 @@
  * | Steps                                     | Function                         |
  * |-------------------------------------------|----------------------------------|
  * | Retrieve sensor settings to be used       | bsec_sensor_control()            |
- * | Configure sensor and trigger measurement  | See BME680 API and example codes |
- * | Read results from sensor                  | See BME680 API and example codes |
+ * | Configure sensor and trigger measurement  | [See BME680 API and example codes](https://github.com/BoschSensortec/BME68x-Sensor-API) |
+ * | Read results from sensor                  | [See BME680 API and example codes](https://github.com/BoschSensortec/BME68x-Sensor-API) |
  * | Perform signal processing                 | bsec_do_steps()                  |
  *
  * 
  * - Before shutting down the system, the current state of BSEC can be retrieved and can then be used during 
  *   re-initialization to continue processing.
  *   
- * | Steps                                  | Function          |
- * |----------------------------------------|-------------------|
- * | To retrieve the current library state  |  bsec_get_state() |
- * 
+ * | Steps                                       | Function          |
+ * |---------------------------------------------|-------------------|
+ * | Retrieve the current library state          |  bsec_get_state() |
+ * | Retrieve the current library configuration  |  bsec_get_configuration() |
  * 
  * 
  * ### Configuration and state                       
@@ -188,7 +185,7 @@ bsec_library_return_t bsec_init(void);
  *
  * Based on the requested virtual sensors outputs, BSEC will provide information about the required physical sensor input signals 
  * (see ::bsec_physical_sensor_t) with corresponding sample rates. This information is purely informational as bsec_sensor_control()
- * will ensure the sensor is operated in the required manner. To disable a virtual sensor, set the sample rate to BSEC_SAMPLE_RATE_DISABLED.
+ * will ensure the sensor is operated in the required manner. To disable a virtual sensor, set the sample rate to #BSEC_SAMPLE_RATE_DISABLED.
  *
  * The subscription update using bsec_update_subscription() is apart from the signal processing one of the the most 
  * important functions. It allows to enable the desired library outputs. The function determines which physical input 
@@ -207,7 +204,7 @@ bsec_library_return_t bsec_init(void);
  *  - Identifiers are unique values defined by the library, not from external
  *  - Sample rates must be provided as value of
  *     - An allowed sample rate for continuously sampled signals
- *     - 65535.0f (BSEC_SAMPLE_RATE_DISABLED) to turn off outputs and identify disabled inputs
+ *     - 65535.0f (#BSEC_SAMPLE_RATE_DISABLED) to turn off outputs and identify disabled inputs
  *
  * @note The same sensor identifiers are also used within the functions bsec_do_steps().
  *
@@ -330,8 +327,8 @@ bsec_library_return_t bsec_update_subscription(const bsec_sensor_configuration_t
                     // Retrieve the IAQ results from output[i].signal
                     // and do something with the data
                     break;
-                case BSEC_OUTPUT_AMBIENT_TEMPERATURE:
-                    // Retrieve the ambient temperature results from output[i].signal
+                case BSEC_OUTPUT_STATIC_IAQ:
+                    // Retrieve the static IAQ results from output[i].signal
                     // and do something with the data
                     break;
                 
@@ -373,8 +370,9 @@ bsec_library_return_t bsec_reset_output(uint8_t sensor_id);
  * by bsec_set_configuration(). This is an optional step.
  * 
  * @note A work buffer with sufficient size is required and has to be provided by the function caller to decompose 
- * the serialization and apply it to the library and its modules. Please use #BSEC_MAX_PROPERTY_BLOB_SIZE for allotting 
- * the required size.
+ * the serialization and apply it to the library and its modules.
+ *
+ * Please use #BSEC_MAX_PROPERTY_BLOB_SIZE for allotting the required size.
  *
  * @param[in]       serialized_settings     Settings serialized to a binary blob
  * @param[in]       n_serialized_settings   Size of the settings blob
@@ -389,8 +387,8 @@ bsec_library_return_t bsec_reset_output(uint8_t sensor_id);
     // Allocate variables
     uint8_t serialized_settings[BSEC_MAX_PROPERTY_BLOB_SIZE];
     uint32_t n_serialized_settings_max = BSEC_MAX_PROPERTY_BLOB_SIZE;
-    uint8_t work_buffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
-    uint32_t n_work_buffer = BSEC_MAX_PROPERTY_BLOB_SIZE;
+    uint8_t work_buffer[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t n_work_buffer = BSEC_MAX_WORKBUFFER_SIZE;
 
     // Here we will load a provided config string into serialized_settings 
     
@@ -414,8 +412,9 @@ bsec_library_return_t bsec_set_configuration(const uint8_t * const serialized_se
  * before resuming further operation of the library.
  * 
  * @note A work buffer with sufficient size is required and has to be provided by the function caller to decompose the 
- * serialization and apply it to the library and its modules. Please use #BSEC_MAX_PROPERTY_BLOB_SIZE for allotting the 
- * required size.
+ * serialization and apply it to the library and its modules.
+ *
+ * Please use #BSEC_MAX_STATE_BLOB_SIZE for allotting the required size.
  *
  * @param[in]       serialized_state        States serialized to a binary blob
  * @param[in]       n_serialized_state      Size of the state blob
@@ -430,8 +429,8 @@ bsec_library_return_t bsec_set_configuration(const uint8_t * const serialized_se
     // Allocate variables
     uint8_t serialized_state[BSEC_MAX_PROPERTY_BLOB_SIZE];
     uint32_t  n_serialized_state = BSEC_MAX_PROPERTY_BLOB_SIZE;
-    uint8_t work_buffer_state[BSEC_MAX_PROPERTY_BLOB_SIZE];
-    uint32_t  n_work_buffer_size = BSEC_MAX_PROPERTY_BLOB_SIZE;
+    uint8_t work_buffer_state[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t  n_work_buffer_size = BSEC_MAX_WORKBUFFER_SIZE;
 
     // Here we will load a state string from a previous use of BSEC
 
@@ -453,10 +452,10 @@ bsec_library_return_t bsec_set_state(const uint8_t * const serialized_state, con
  *
  * @note The function bsec_get_configuration() is required to be used for debugging purposes only.
  * @note A work buffer with sufficient size is required and has to be provided by the function caller to decompose the 
- * serialization and apply it to the library and its modules. Please use #BSEC_MAX_PROPERTY_BLOB_SIZE for allotting the 
- * required size.
- * 
+ * serialization and apply it to the library and its modules.
  *
+ * Please use #BSEC_MAX_PROPERTY_BLOB_SIZE for allotting the required size.
+ * 
  * @param[in]       config_id                   Identifier for a specific set of configuration settings to be returned;
  *                                              shall be zero to retrieve all configuration settings.
  * @param[out]      serialized_settings         Buffer to hold the serialized config blob
@@ -473,8 +472,8 @@ bsec_library_return_t bsec_set_state(const uint8_t * const serialized_state, con
     // Allocate variables
     uint8_t serialized_settings[BSEC_MAX_PROPERTY_BLOB_SIZE];
     uint32_t n_serialized_settings_max = BSEC_MAX_PROPERTY_BLOB_SIZE;
-    uint8_t work_buffer[BSEC_MAX_PROPERTY_BLOB_SIZE];
-    uint32_t n_work_buffer = BSEC_MAX_PROPERTY_BLOB_SIZE;
+    uint8_t work_buffer[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t n_work_buffer = BSEC_MAX_WORKBUFFER_SIZE;
     uint32_t n_serialized_settings = 0;
     
     // Configuration of BSEC algorithm is stored in 'serialized_settings'
@@ -494,10 +493,10 @@ bsec_library_return_t bsec_get_configuration(const uint8_t config_id, uint8_t * 
  * bsec_get_state(). This allows a restart of the processing after a reboot of the system by calling bsec_set_state().
  * 
  * @note A work buffer with sufficient size is required and has to be provided by the function caller to decompose the 
- * serialization and apply it to the library and its modules. Please use #BSEC_MAX_STATE_BLOB_SIZE for allotting the 
- * required size.
- * 
+ * serialization and apply it to the library and its modules.
  *
+ * Please use #BSEC_MAX_STATE_BLOB_SIZE for allotting the required size.
+ * 
  * @param[in]       state_set_id                Identifier for a specific set of states to be returned; shall be
  *                                              zero to retrieve all states.
  * @param[out]      serialized_state            Buffer to hold the serialized config blob
@@ -515,8 +514,8 @@ bsec_library_return_t bsec_get_configuration(const uint8_t config_id, uint8_t * 
     uint8_t serialized_state[BSEC_MAX_STATE_BLOB_SIZE];
     uint32_t n_serialized_state_max = BSEC_MAX_STATE_BLOB_SIZE;
     uint32_t  n_serialized_state = BSEC_MAX_STATE_BLOB_SIZE;
-    uint8_t work_buffer_state[BSEC_MAX_STATE_BLOB_SIZE];
-    uint32_t  n_work_buffer_size = BSEC_MAX_STATE_BLOB_SIZE;
+    uint8_t work_buffer_state[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t  n_work_buffer_size = BSEC_MAX_WORKBUFFER_SIZE;
     
     // Algorithm state is stored in 'serialized_state'
     bsec_get_state(0, serialized_state, n_serialized_state_max, work_buffer_state, n_work_buffer_size, &n_serialized_state);

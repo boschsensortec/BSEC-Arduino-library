@@ -86,11 +86,11 @@ extern "C"
 
 #define BSEC_MAX_WORKBUFFER_SIZE     (2048)    /*!< Maximum size (in bytes) of the work buffer */
 #define BSEC_MAX_PHYSICAL_SENSOR     (8)         /*!< Number of physical sensors that need allocated space before calling bsec_update_subscription() */
-#define BSEC_MAX_PROPERTY_BLOB_SIZE  (454)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
-#define BSEC_MAX_STATE_BLOB_SIZE     (139)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
+#define BSEC_MAX_PROPERTY_BLOB_SIZE  (462)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
+#define BSEC_MAX_STATE_BLOB_SIZE     (155)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
 #define BSEC_SAMPLE_RATE_DISABLED    (65535.0f)      /*!< Sample rate of a disabled sensor */
 #define BSEC_SAMPLE_RATE_ULP         (0.0033333f)           /*!< Sample rate in case of Ultra Low Power Mode */
-#define BSEC_SAMPLE_RATE_CONTINUOUS  (1.0f)    /*!< Sample rate in case of Continuous Mode */ 
+#define BSEC_SAMPLE_RATE_CONT        (1.0f)          /*!< Sample rate in case of Continuous Mode */
 #define BSEC_SAMPLE_RATE_LP          (0.33333f)            /*!< Sample rate in case of Low Power Mode */
 #define BSEC_SAMPLE_RATE_ULP_MEASUREMENT_ON_DEMAND         (0.0f)            /*!< Input value used to trigger an extra measurment (ULP plus) */        
 
@@ -156,18 +156,13 @@ typedef enum
      */
     BSEC_INPUT_HEATSOURCE = 14,        
 
-    /**
-     * @brief Additional input for device heat compensation 8
-     *
-     * Generic heat source 8
-     */
-
+   
     
     /**
      * @brief Additional input that disables baseline tracker
      *
-     * 0 - Normal  
-     * 1 - Event 1
+     * 0 - Normal,  
+     * 1 - Event 1,
      * 2 - Event 2
      */
     BSEC_INPUT_DISABLE_BASELINE_TRACKER = 23, 
@@ -185,20 +180,20 @@ typedef enum
 typedef enum
 {
     /**
-     * @brief Indoor-air-quality estimate [0-500]
+     * @brief Index for Air Quality estimate [0-500]
      * 
-     * Indoor-air-quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME680. 
+     * Index for Air Quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME680. 
      * 
      * @note The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms 
      * automatically calibrate and adapt themselves to the typical environments where the sensor is operated 
      * (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience 
      * consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four 
-     * days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
+     * days) to ensure that IAQ=50 corresponds to typical good air and IAQ=200 indicates typical polluted air.
      */
     BSEC_OUTPUT_IAQ = 1,                           
-    BSEC_OUTPUT_STATIC_IAQ = 2,                             /*!< Unscaled indoor-air-quality estimate */ 
-    BSEC_OUTPUT_CO2_EQUIVALENT = 3,                         /*!< co2 equivalent estimate [ppm] */   
-    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT = 4,                  /*!< breath VOC concentration estimate [ppm] */    	
+    BSEC_OUTPUT_STATIC_IAQ = 2,                             /*!< Unscaled Index for Air Quality estimate */ 
+    BSEC_OUTPUT_CO2_EQUIVALENT = 3,                         /*!< CO2 equivalent estimate [ppm] */   
+    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT = 4,                  /*!< Breath VOC concentration estimate [ppm] */    	
 
     /**
      * @brief Temperature sensor signal [degrees Celsius]
@@ -261,10 +256,10 @@ typedef enum
      * 
      * Thus, the value is calculated as follows:
      * * IAQ solution: ```BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = ::BSEC_INPUT_TEMPERATURE -  function(sensor operation mode, sensor supply voltage) - ::BSEC_INPUT_HEATSOURCE```
-     * * other solutions: ```::BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = ::BSEC_INPUT_TEMPERATURE -  function(sensor operation mode, sensor supply voltage)```
+     * * Other solutions: ```::BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = ::BSEC_INPUT_TEMPERATURE -  function(sensor operation mode, sensor supply voltage)```
      *
-     * The self-heating in operation mode BSEC_SAMPLE_RATE_ULP is negligible.
-     * The self-heating in operation mode BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME680 sensor supply voltage is 3.3V, the IoT_LP_3_3V.config shall be used.
+     * The self-heating in operation mode #BSEC_SAMPLE_RATE_ULP is negligible.
+     * The self-heating in operation mode #BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME680 sensor supply voltage is 3.3V, the corresponding config file shall be used.
      */
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = 14,   
 
@@ -281,8 +276,7 @@ typedef enum
      */
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY = 15,     
 
-    BSEC_OUTPUT_COMPENSATED_GAS = 18,         			    /*!< Reserved internal debug output */ 	
-	BSEC_OUTPUT_GAS_PERCENTAGE = 21                         /*!< percentage of min and max filtered gas value [%] */
+	BSEC_OUTPUT_GAS_PERCENTAGE = 21                         /*!< Percentage of min and max filtered gas value [%] */
 } bsec_virtual_sensor_t;
 
 /*!
@@ -293,10 +287,10 @@ typedef enum
     BSEC_OK = 0,                                    /*!< Function execution successful */
     BSEC_E_DOSTEPS_INVALIDINPUT = -1,               /*!< Input (physical) sensor id passed to bsec_do_steps() is not in the valid range or not valid for requested virtual sensor */
     BSEC_E_DOSTEPS_VALUELIMITS = -2,                /*!< Value of input (physical) sensor signal passed to bsec_do_steps() is not in the valid range */
+    BSEC_W_DOSTEPS_TSINTRADIFFOUTOFRANGE = 4,      /*!< Past timestamps passed to bsec_do_steps() */
     BSEC_E_DOSTEPS_DUPLICATEINPUT = -6,             /*!< Duplicate input (physical) sensor ids passed as input to bsec_do_steps() */
     BSEC_I_DOSTEPS_NOOUTPUTSRETURNABLE = 2,         /*!< No memory allocated to hold return values from bsec_do_steps(), i.e., n_outputs == 0 */
     BSEC_W_DOSTEPS_EXCESSOUTPUTS = 3,               /*!< Not enough memory allocated to hold return values from bsec_do_steps(), i.e., n_outputs < maximum number of requested output (virtual) sensors */
-    BSEC_W_DOSTEPS_TSINTRADIFFOUTOFRANGE = 4,       /*!< Duplicate timestamps passed to bsec_do_steps() */
     BSEC_E_SU_WRONGDATARATE = -10,                  /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() is zero */
     BSEC_E_SU_SAMPLERATELIMITS = -12,               /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() does not match with the sampling rate allowed for that sensor */
     BSEC_E_SU_DUPLICATEGATE = -13,                  /*!< Duplicate output (virtual) sensor ids requested through bsec_update_subscription() */
@@ -397,15 +391,6 @@ typedef struct
      *
      * For example:
      * 
-     * - Ambient temperature accuracy is derived from change in the temperature in 1 minute.
-     * 
-     *   | Virtual sensor       | Value |  Accuracy description                                                        |
-     *   |--------------------- |-------|------------------------------------------------------------------------------|
-     *   | Ambient temperature  |   0   | The difference in ambient temperature is greater than 4 degree in one minute |
-     *   |                      |   1   | The difference in ambient temperature is less than 4 degree in one minute    |
-     *   |                      |   2   | The difference in ambient temperature is less than 3 degree in one minute    |
-     *   |                      |   3   | The difference in ambient temperature is less than 2 degree in one minute    |
-     * 
      * - IAQ accuracy indicator will notify the user when she/he should initiate a calibration process. Calibration is 
      *   performed automatically in the background if the sensor is exposed to clean and polluted air for approximately 
      *   30 minutes each.
@@ -467,7 +452,7 @@ typedef struct
 typedef struct
 {
     int64_t next_call;                  /*!< @brief Time stamp of the next call of the sensor_control*/
-    uint32_t process_data;              /*!< @brief Bit field describing which data is to be passed to bsec_do_steps() @sa BSEC_PROCESS_* */
+    uint32_t process_data;              /*!< @brief Bit field describing which data is to be passed to bsec_do_steps() @sa BSEC_PROCESS_GAS, BSEC_PROCESS_TEMPERATURE, BSEC_PROCESS_HUMIDITY, BSEC_PROCESS_PRESSURE */
     uint16_t heater_temperature;        /*!< @brief Heating temperature [degrees Celsius] */
     uint16_t heating_duration;          /*!< @brief Heating duration [ms] */
     uint8_t run_gas;                    /*!< @brief Enable gas measurements [0/1] */
