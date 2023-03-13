@@ -31,12 +31,8 @@ bsec_virtual_sensor_t sensor_list[] = {
   BSEC_OUTPUT_RAW_PRESSURE,
   BSEC_OUTPUT_RAW_HUMIDITY,
   BSEC_OUTPUT_RAW_GAS,
-  BSEC_OUTPUT_IAQ,
-  BSEC_OUTPUT_STATIC_IAQ,
   BSEC_OUTPUT_CO2_EQUIVALENT,
   BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
-  BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-  BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
 };
 
 int64_t GetTimestamp() {
@@ -46,18 +42,18 @@ int64_t GetTimestamp() {
 }
 
 bool CheckSensor() {
-  if (sensor.status < BSEC_OK) {
-    LOG("BSEC error, status %d!", sensor.status);
+  if (sensor.bsecStatus < BSEC_OK) {
+    LOG("BSEC error, status %d!", sensor.bsecStatus);
     return false;;
-  } else if (sensor.status > BSEC_OK) {
-    LOG("BSEC warning, status %d!", sensor.status);
+  } else if (sensor.bsecStatus > BSEC_OK) {
+    LOG("BSEC warning, status %d!", sensor.bsecStatus);
   }
 
-  if (sensor.bme680Status < BME680_OK) {
-    LOG("Sensor error, bme680_status %d!", sensor.bme680Status);
+  if (sensor.bme68xStatus < BME68X_OK) {
+    LOG("Sensor error, bme680_status %d!", sensor.bme68xStatus);
     return false;
-  } else if (sensor.bme680Status > BME680_OK) {
-    LOG("Sensor warning, status %d!", sensor.bme680Status);
+  } else if (sensor.bme68xStatus > BME68X_OK) {
+    LOG("Sensor warning, status %d!", sensor.bme68xStatus);
   }
 
   return true;
@@ -114,12 +110,10 @@ void setup() {
 }
 
 void loop() {
-  if (sensor.run(GetTimestamp())) {
+  if (sensor.run()) {
     LOG("Temperature raw %.2f compensated %.2f", sensor.rawTemperature, sensor.temperature);
     LOG("Humidity raw %.2f compensated %.2f", sensor.rawHumidity, sensor.humidity);
     LOG("Pressure %.2f kPa", sensor.pressure / 1000);
-    LOG("IAQ %.0f accuracy %d", sensor.iaq, sensor.iaqAccuracy);
-    LOG("Static IAQ %.0f accuracy %d", sensor.staticIaq, sensor.staticIaqAccuracy);
     LOG("Gas resistance %.2f kOhm", sensor.gasResistance / 1000);
 
     sensor_state_time = GetTimestamp();
@@ -128,7 +122,7 @@ void loop() {
     LOG("Saved state to RTC memory at %lld", sensor_state_time);
     CheckSensor();
 
-    uint64_t time_us = ((sensor.nextCall - GetTimestamp()) * 1000) - esp_timer_get_time();
+    uint64_t time_us = (sensor.nextCall * 1000) - esp_timer_get_time();
     LOG("Deep sleep for %llu ms. BSEC next call at %llu ms.", time_us / 1000, sensor.nextCall);
     esp_sleep_enable_timer_wakeup(time_us);
     esp_deep_sleep_start();

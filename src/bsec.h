@@ -43,9 +43,9 @@
 #include "Arduino.h"
 #include "Wire.h"
 #include "SPI.h"
-#include "bsec_datatypes.h"
-#include "bsec_interface.h"
-#include "bme68x.h"
+#include "inc/bsec_datatypes.h"
+#include "inc/bsec_interface.h"
+#include "bme68x/bme68x.h"
 
 #define BME68X_ERROR            INT8_C(-1)
 #define BME68X_WARNING          INT8_C(1)
