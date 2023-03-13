@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/BoschSensortec/BSEC-Arduino-library"
   },
-  "version": v1.8.1492",
+  "version": "v1.8.1492",
   "authors": {
     "name": "Bosch Sensortec",
     "email": "contact@bosch-sensortec.com"
